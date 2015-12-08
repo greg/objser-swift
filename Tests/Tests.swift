@@ -23,21 +23,21 @@ class Tests: XCTestCase {
     
     func testFormatCoding() {
 		
-		let f = Format(array: [
-			Format(integer: 152352050802),
-			Format(string: "aoeu"),
-			Format(data: []),
-			Format(float: 3.14159265358979323846),
-			Format(data: [4, 255]),
-			Format(map: []),
-			Format(integer: -1),
-			Format(array: []),
+		let f = Format.Array([
+			Format.Integer(152352050802),
+			Format.String("aoeu"),
+			Format.Data([]),
+			Format.Float(3.14159265358979323846),
+			Format.Data([4, 255]),
+			Format.Map([]),
+			Format.Integer(-1),
+			Format.Array([]),
 			nil,
-			Format(boolean: true),
-			Format(array: [
-				Format(string: ""),
-				Format(map: [
-					Format(integer: -7), Format(boolean: false)
+			Format.Boolean(true),
+			Format.Array([
+				Format.String(""),
+				Format.Map([
+					Format.Integer(-7), Format.Boolean(false)
 					])
 				])
 			])
@@ -52,8 +52,8 @@ class Tests: XCTestCase {
 		i.open()
 		let g = try! Format(stream: i)
 		i.close()
-
-		XCTAssertEqual(f, g)
+		
+		XCTAssertEqual(String(f), String(g))
     }
     
 }

@@ -11,54 +11,19 @@ public typealias FormatArray = ContiguousArray<Format>
 // MARK: Formats
 
 /// Defines the AOGF storage formats.
-/// - Note: Do *not* directly select cases from this enumeration. Use the provided initialisers to correctly select the most appropriate case for a given value.
 public enum Format {
 	
-	case Ref6(Byte)
-	case Ref8(Byte)
-	case Ref16(ByteArray)
-	case Ref32(ByteArray)
-	
-	case PosInt6(Byte)
-	case NegInt5(Byte)
-	
-	case False
-	case True
-	
+	case Reference(UInt32)
+	case Integer(AnyInteger)
 	case Nil
-	
-	case Int8(Byte)
-	case Int16(ByteArray)
-	case Int32(ByteArray)
-	case Int64(ByteArray)
-	case UInt8(Byte)
-	case UInt16(ByteArray)
-	case UInt32(ByteArray)
-	case UInt64(ByteArray)
-	
-	case Float32(ByteArray)
-	case Float64(ByteArray)
-	
+	case Boolean(Bool)
+	case Float(AnyFloat)
+	case String(Swift.String)
+	case Data(ByteArray)
 	indirect case Pair(Format, Format)
-	
-	case FString(ByteArray)
-	case VString(ByteArray)
-	case EString
-	
-	case FData(ByteArray)
-	case VData8(ByteArray)
-	case VData16(ByteArray)
-	case VData32(ByteArray)
-	case VData64(ByteArray)
-	case EData
-	
-	indirect case FArray(FormatArray)
-	indirect case VArray(FormatArray)
-	case EArray
-	
-	/// Format argument must be an FArray or VArray
-	indirect case Map(Format)
-	case EMap
+	indirect case Array(FormatArray)
+	/// Provide an array of alternating keys and values.
+	indirect case Map(FormatArray)
 	
 	struct Codes {
 		/// 0x00 – 0x3f
@@ -132,55 +97,10 @@ public enum Format {
 	
 }
 
-public func ==(a: Format, b: Format) -> Bool {
-	switch (a, b) {
-	case (.Ref6(let a), .Ref6(let b)): return a == b
-	case (.Ref8(let a), .Ref8(let b)): return a == b
-	case (.Ref16(let a), .Ref16(let b)): return a == b
-	case (.Ref32(let a), .Ref32(let b)): return a == b
+extension Format: NilLiteralConvertible {
 	
-	case (.PosInt6(let a), .PosInt6(let b)): return a == b
-	case (.NegInt5(let a), .NegInt5(let b)): return a == b
-	
-	case (.False, .False): return true
-	case (.True, .True): return true
-	
-	case (.Nil, .Nil): return true
-	
-	case (.Int8(let a), .Int8(let b)): return a == b
-	case (.Int16(let a), .Int16(let b)): return a == b
-	case (.Int32(let a), .Int32(let b)): return a == b
-	case (.Int64(let a), .Int64(let b)): return a == b
-	case (.UInt8(let a), .UInt8(let b)): return a == b
-	case (.UInt16(let a), .UInt16(let b)): return a == b
-	case (.UInt32(let a), .UInt32(let b)): return a == b
-	case (.UInt64(let a), .UInt64(let b)): return a == b
-	
-	case (.Float32(let a), .Float32(let b)): return a == b
-	case (.Float64(let a), .Float64(let b)): return a == b
-	
-	case (.Pair(let a1, let a2), .Pair(let b1, let b2)): return a1 == b1 && a2 == b2
-	
-	case (.FString(let a), .FString(let b)): return a == b
-	case (.VString(let a), .VString(let b)): return a == b
-	case (.EString, .EString): return true
-	
-	case (.FData(let a), .FData(let b)): return a == b
-	case (.VData8(let a), .VData8(let b)): return a == b
-	case (.VData16(let a), .VData16(let b)): return a == b
-	case (.VData32(let a), .VData32(let b)): return a == b
-	case (.VData64(let a), .VData64(let b)): return a == b
-	case (.EData, .EData): return true
-	
-	case (.FArray(let a), .FArray(let b)): return a == b
-	case (.VArray(let a), .VArray(let b)): return a == b
-	case (.EArray, .EArray): return true
-	
-	/// Format argument must be an FArray or VArray
-	case (.Map(let a), .Map(let b)): return a == b
-	case (.EMap, .EMap): return true
-	default: return false
+	public init(nilLiteral: ()) {
+		self = .Nil
 	}
+	
 }
-
-extension Format: Equatable { }

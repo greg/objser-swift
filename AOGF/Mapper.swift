@@ -15,7 +15,7 @@ public class Mapper {
 	
 	/// Maps `v` for `key` in the current object.
 	/// If `key` is not given, `v` is mapped as the *only* value of the current object. In this case, no values may be mapped for keys within the object.
-	public func map<T: Archivable>(inout v: T, forKey key: String? = nil, type: T.Type = T.self) {
+	public func map<T: Mapping>(inout v: T, forKey key: String? = nil, type: T.Type = T.self) {
 		
 	}
 	

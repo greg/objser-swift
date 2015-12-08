@@ -14,10 +14,10 @@ public enum Error: ErrorType {
 	
 }
 
-public func archive(rootObject: Archivable) -> NSData {
+public func archive(rootObject: Mapping) -> NSData {
 	fatalError()
 }
 
-public func unarchive<T: Archivable>(data: NSData) throws -> T {
+public func unarchive<T: Mapping>(data: NSData) throws -> T {
 	fatalError()
 }

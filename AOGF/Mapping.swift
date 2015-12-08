@@ -1,5 +1,5 @@
 //
-//  Archivable.swift
+//  Mapping.swift
 //  AOGF
 //
 //  Created by Greg Omelaenko on 7/12/2015.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol Archivable {
+public protocol Mapping {
 	
 	/// Uses the provided mapper's `map` function to map itself or its properties.
 	mutating func archiveMap(mapper: Mapper)

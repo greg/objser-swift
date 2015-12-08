@@ -34,116 +34,111 @@ extension Format {
 	
 	func writeTo(stream: NSOutputStream) {
 		switch self {
-		case .Ref6(let v):
-			assert(v <= 0b0011_1111)
-			stream.write(Codes.Ref6 | v)
-		case .Ref8(let v):
-			stream.write(Codes.Ref8, v)
-		case .Ref16(let v):
-			stream.write(Codes.Ref16, v)
-		case .Ref32(let v):
-			stream.write(Codes.Ref32, v)
 			
-		case .PosInt6(let v):
-			assert(v <= 0b0011_1111)
-			stream.write(Codes.PosInt6 | v)
-		case .NegInt5(let v):
-			assert((0b1110_0000...0b1111_1111 as ClosedInterval) ~= v)
-			stream.write(v)
+		case .Reference(let v):
+			switch v {
+			case 0...0b0011_1111:
+				stream.write(Codes.Ref6 | Byte(v))
+			case 0...0xff:
+				stream.write(Codes.Ref8, Byte(v))
+			case 0...0xffff:
+				stream.write(Codes.Ref16, UInt16(v).bytes)
+			case 0...0xffff_ffff:
+				stream.write(Codes.Ref32, UInt32(v).bytes)
+			default:
+				fatalError()
+			}
 			
-		case .False:
-			stream.write(Codes.False)
-		case .True:
-			stream.write(Codes.True)
+		case .Integer(let v):
+			if let v = v.int8Value {
+				switch v {
+				case 0...0b0011_1111:
+					stream.write(Codes.PosInt6 | Byte(v))
+				case -0b0001_1111..<0:
+					stream.write(Byte(bitPattern: v))
+				default:
+					stream.write(Codes.Int8, Byte(bitPattern: v))
+				}
+			}
+			else if let v = v.uint8Value { stream.write(Codes.UInt8, v) }
+			else if let v = v.int16Value { stream.write(Codes.Int16, v.bytes) }
+			else if let v = v.uint16Value { stream.write(Codes.UInt16, v.bytes) }
+			else if let v = v.int32Value { stream.write(Codes.Int32, v.bytes) }
+			else if let v = v.uint32Value { stream.write(Codes.UInt32, v.bytes) }
+			else if let v = v.int64Value { stream.write(Codes.Int64, v.bytes) }
+			else if let v = v.uint64Value { stream.write(Codes.UInt64, v.bytes) }
+			
 		case .Nil:
 			stream.write(Codes.Nil)
 			
-		case .Int8(let v):
-			stream.write(Codes.Int8, v)
-		case .Int16(let v):
-			assert(v.count == 2)
-			stream.write(Codes.Int16, v)
-		case .Int32(let v):
-			assert(v.count == 4)
-			stream.write(Codes.Int32, v)
-		case .Int64(let v):
-			assert(v.count == 8)
-			stream.write(Codes.Int64, v)
-		case .UInt8(let v):
-			stream.write(Codes.UInt8, v)
-		case .UInt16(let v):
-			assert(v.count == 2)
-			stream.write(Codes.UInt16, v)
-		case .UInt32(let v):
-			assert(v.count == 4)
-			stream.write(Codes.UInt32, v)
-		case .UInt64(let v):
-			assert(v.count == 8)
-			stream.write(Codes.UInt64, v)
+		case .Boolean(let v):
+			stream.write(v ? Codes.True : Codes.False)
 			
-		case .Float32(let v):
-			assert(v.count == 4)
-			stream.write(Codes.Float32, v)
-		case .Float64(let v):
-			assert(v.count == 8)
-			stream.write(Codes.Float64, v)
+		case .Float(let v):
+			if let v = v as? Float32 { stream.write(Codes.Float32, v.bytes) }
+			else if let v = v as? Float64 { stream.write(Codes.Float64, v.bytes) }
+			else { fatalError() }
 			
+		case .String(let v):
+			switch v.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) {
+			case 0:
+				stream.write(Codes.EString)
+			case 1...0b0000_1111:
+				var b = v.nulTerminatedUTF8
+				b.removeLast()
+				stream.write(Codes.FString | Byte(b.count), b)
+			default:
+				stream.write(Codes.VString, v.nulTerminatedUTF8)
+			}
+			
+		case .Data(let v):
+			let c = v.count
+			switch c {
+			case 0:
+				stream.write(Codes.EData)
+			case 1...0b0000_1111:
+				stream.write(Codes.FData | Byte(c), v)
+			case 0...0xff:
+				stream.write(Codes.VData8, Byte(c))
+				stream.write(v)
+			case 0...0xffff:
+				stream.write(Codes.VData16, UInt16(c).bytes)
+				stream.write(v)
+			case 0...0xffff_ffff:
+				stream.write(Codes.VData32, UInt32(c).bytes)
+				stream.write(v)
+			default:
+				stream.write(Codes.VData64, UInt64(c).bytes)
+				stream.write(v)
+			}
+
 		case .Pair(let a, let b):
 			stream.write(Codes.Pair)
 			a.writeTo(stream)
 			b.writeTo(stream)
 			
-		case .FString(let v):
-			assert(1...0b0000_1111 ~= v.count)
-			stream.write(Codes.FString | Byte(v.count), v)
-		case .VString(let v):
-			stream.write(Codes.VString, v)
-		case .EString:
-			stream.write(Codes.EString)
-			
-		case .FData(let v):
-			assert(1...0b0000_1111 ~= v.count)
-			stream.write(Codes.FData | Byte(v.count), v)
-		case .VData8(let v):
-			assert(0...0xff ~= v.count)
-			stream.write(Codes.VData8, Byte(v.count))
-			stream.write(v)
-		case .VData16(let v):
-			assert(0...0xffff ~= v.count)
-			stream.write(Codes.VData16, Swift.UInt16(v.count).bytes)
-			stream.write(v)
-		case .VData32(let v):
-			assert(0...0xffff_ffff ~= v.count)
-			stream.write(Codes.VData32, Swift.UInt32(v.count).bytes)
-			stream.write(v)
-		case .VData64(let v):
-			stream.write(Codes.VData64, Swift.UInt64(v.count).bytes)
-			stream.write(v)
-		case .EData:
-			stream.write(Codes.EData)
-
-		case .FArray(let v):
-			assert(1...0b0001_1111 ~= v.count)
-			stream.write(Codes.FArray | Byte(v.count))
-			v.forEach { $0.writeTo(stream) }
-		case .VArray(let v):
-			stream.write(Codes.VArray)
-			v.forEach { $0.writeTo(stream) }
-			stream.write(Codes.Sentinel)
-		case .EArray:
-			stream.write(Codes.EArray)
+		case .Array(let v):
+			let c = v.count
+			switch c {
+			case 0:
+				stream.write(Codes.EArray)
+			case 1...0b001_1111:
+				stream.write(Codes.FArray | Byte(c))
+				v.forEach { $0.writeTo(stream) }
+			default:
+				stream.write(Codes.VArray)
+				v.forEach { $0.writeTo(stream) }
+				stream.write(Codes.Sentinel)
+			}
 			
 		case .Map(let a):
-			assert({
-				switch a {
-				case .FArray, .VArray: return true
-				default: return false
-				}
-			}())
-			stream.write(Codes.Map)
-			a.writeTo(stream)
-		case .EMap:
-			stream.write(Codes.EMap)
+			if a.count == 0 {
+				stream.write(Codes.EMap)
+			}
+			else {
+				stream.write(Codes.Map)
+				Format.Array(a).writeTo(stream)
+			}
 		}
 	}
 	
@@ -151,18 +146,31 @@ extension Format {
 
 extension NSInputStream {
 	
-	func readByte() -> (v: Byte, status: Int) {
+	func readByte() -> Byte {
 		var v: Byte = 0
-		let s = read(&v, maxLength: 1)
-		return (v, s)
+		let _ = read(&v, maxLength: 1)
+		return v
 	}
 	
-	func readByteArray(length length: Int) -> (v: ByteArray, status: Int) {
+	func readByteArray(length length: Int) -> ByteArray {
 		var bytes = ByteArray(count: length, repeatedValue: 0)
-		let s = bytes.withUnsafeMutableBufferPointer { (inout buf: UnsafeMutableBufferPointer<Byte>) in
+		let _ = bytes.withUnsafeMutableBufferPointer { (inout buf: UnsafeMutableBufferPointer<Byte>) in
 			return read(buf.baseAddress, maxLength: length)
 		}
-		return (bytes, s)
+		return bytes
+	}
+	
+}
+
+extension String {
+	
+	init?(UTF8Bytes bytes: ByteArray) {
+		guard let str = bytes.withUnsafeBufferPointer({
+			String(UTF8String: UnsafePointer<CChar>($0.baseAddress))
+		}) else {
+			return nil
+		}
+		self = str
 	}
 	
 }
@@ -174,85 +182,94 @@ extension Format {
 		case SentinelReached
 		case ReservedCode(Byte)
 		case InvalidMapArray(Format)
+		case InvalidString(ByteArray)
 	
 	}
 	
 	init(stream: NSInputStream) throws {
-		let (v, _) = stream.readByte()
+		let v = stream.readByte()
 		switch v {
 		case Ranges.Ref6:
-			self = Ref6(v)
+			self = .Reference(UInt32(v))
 		case Codes.Ref8:
-			self = Ref8(stream.readByte().v)
+			self = .Reference(UInt32(stream.readByte()))
 		case Codes.Ref16:
-			self = Ref16(stream.readByteArray(length: 2).v)
+			self = .Reference(UInt32(UInt16(bytes: stream.readByteArray(length: 2))))
 		case Codes.Ref32:
-			self = Ref32(stream.readByteArray(length: 4).v)
+			self = .Reference(UInt32(bytes: stream.readByteArray(length: 4)))
 			
 		case Ranges.PosInt6:
-			self = PosInt6(v & 0b0011_1111)
+			self = .Integer(v & 0b0011_1111)
 		case Ranges.NegInt5:
-			self = NegInt5(v)
+			self = .Integer(Int8(bitPattern: v))
 			
 		case Codes.False:
-			self = False
+			self = .Boolean(false)
 		case Codes.True:
-			self = True
+			self = .Boolean(true)
 			
 		case Codes.Nil:
-			self = Nil
+			self = .Nil
 			
 		case Codes.Int8:
-			self = Int8(stream.readByte().v)
+			self = .Integer(Int8(bitPattern: stream.readByte()))
 		case Codes.Int16:
-			self = Int16(stream.readByteArray(length: 2).v)
+			self = .Integer(Int16(bytes: stream.readByteArray(length: 2)))
 		case Codes.Int32:
-			self = Int32(stream.readByteArray(length: 4).v)
+			self = .Integer(Int32(bytes: stream.readByteArray(length: 4)))
 		case Codes.Int64:
-			self = Int64(stream.readByteArray(length: 8).v)
+			self = .Integer(Int64(bytes: stream.readByteArray(length: 8)))
 		case Codes.UInt8:
-			self = UInt8(stream.readByte().v)
+			self = .Integer(UInt8(stream.readByte()))
 		case Codes.UInt16:
-			self = UInt16(stream.readByteArray(length: 2).v)
+			self = .Integer(UInt16(bytes: stream.readByteArray(length: 2)))
 		case Codes.UInt32:
-			self = UInt32(stream.readByteArray(length: 4).v)
+			self = .Integer(UInt32(bytes: stream.readByteArray(length: 4)))
 		case Codes.UInt64:
-			self = UInt64(stream.readByteArray(length: 8).v)
+			self = .Integer(UInt64(bytes: stream.readByteArray(length: 8)))
 			
 		case Codes.Float32:
-			self = Float32(stream.readByteArray(length: 4).v)
+			self = .Float(Float32(bytes: stream.readByteArray(length: 4)))
 		case Codes.Float64:
-			self = Float64(stream.readByteArray(length: 8).v)
+			self = .Float(Float64(bytes: stream.readByteArray(length: 8)))
 			
 		case Codes.Pair:
 			self = try Pair(Format(stream: stream), Format(stream: stream))
 			
 		case Ranges.FString:
-			self = FString(stream.readByteArray(length: Int(v) & 0b1111).v)
-		case Codes.VString:
-			var str = ByteArray()
-			while str.last != 0 {
-				str.append(stream.readByte().v)
+			var b = stream.readByteArray(length: Int(v) & 0b1111)
+			b.append(0)
+			guard let str = Swift.String(UTF8Bytes: b) else {
+				throw DecodeError.InvalidString(b)
 			}
-			self = VString(str)
+			self = .String(str)
+		case Codes.VString:
+			var b = ByteArray()
+			while b.last != 0 {
+				b.append(stream.readByte())
+			}
+			guard let str = Swift.String(UTF8Bytes: b) else {
+				throw DecodeError.InvalidString(b)
+			}
+			self = .String(str)
 		case Codes.EString:
-			self = EString
+			self = .String("")
 			
 		case Ranges.FData:
-			self = FData(stream.readByteArray(length: Int(v) & 0b1111).v)
+			self = .Data(stream.readByteArray(length: Int(v) & 0b1111))
 		case Codes.VData8:
-			self = VData8(stream.readByteArray(length: Int(stream.readByte().v)).v)
+			self = .Data(stream.readByteArray(length: Int(stream.readByte())))
 		case Codes.VData16:
-			let len = Swift.UInt16(bytes: stream.readByteArray(length: 2).v)
-			self = VData16(stream.readByteArray(length: Int(len)).v)
+			let len = Swift.UInt16(bytes: stream.readByteArray(length: 2))
+			self = .Data(stream.readByteArray(length: Int(len)))
 		case Codes.VData32:
-			let len = Swift.UInt32(bytes: stream.readByteArray(length: 4).v)
-			self = VData32(stream.readByteArray(length: Int(len)).v)
+			let len = Swift.UInt32(bytes: stream.readByteArray(length: 4))
+			self = .Data(stream.readByteArray(length: Int(len)))
 		case Codes.VData64:
-			let len = Swift.UInt64(bytes: stream.readByteArray(length: 8).v)
-			self = VData64(stream.readByteArray(length: Int(len)).v)
+			let len = Swift.UInt64(bytes: stream.readByteArray(length: 8))
+			self = .Data(stream.readByteArray(length: Int(len)))
 		case Codes.EData:
-			self = EData
+			self = .Data([])
 			
 		case Ranges.FArray:
 			let len = Int(v & 0b1_1111)
@@ -261,25 +278,25 @@ extension Format {
 			for _ in 0..<len {
 				array.append(try Format(stream: stream))
 			}
-			self = FArray(array)
+			self = .Array(array)
 		case Codes.VArray:
 			var array = FormatArray()
 			while true {
 				do { array.append(try Format(stream: stream)) }
 				catch DecodeError.SentinelReached { break }
 			}
-			self = VArray(array)
+			self = .Array(array)
 		case Codes.EArray:
-			self = EArray
+			self = .Array([])
+			
 		case Codes.Map:
 			let a = try Format(stream: stream)
-			switch a {
-			case .FArray, .VArray: break
-			default: throw DecodeError.InvalidMapArray(a)
+			guard case .Array(let v) = a else {
+				throw DecodeError.InvalidMapArray(a)
 			}
-			self = Map(a)
+			self = .Map(v)
 		case Codes.EMap:
-			self = EMap
+			self = .Map([])
 			
 		case Codes.Sentinel:
 			throw DecodeError.SentinelReached
