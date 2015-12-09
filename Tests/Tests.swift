@@ -21,23 +21,23 @@ class Tests: XCTestCase {
         super.tearDown()
     }
     
-    func testFormatCoding() {
+    func testTypeCoding() {
 		
-		let f = Format.Array([
-			Format.Integer(152352050802),
-			Format.String("aoeu"),
-			Format.Data([]),
-			Format.Float(3.14159265358979323846),
-			Format.Data([4, 255]),
-			Format.Map([]),
-			Format.Integer(-1),
-			Format.Array([]),
+		let f = ArchiveType.Array([
+			ArchiveType.Integer(152352050802),
+			ArchiveType.String("aoeu"),
+			ArchiveType.Data([]),
+			ArchiveType.Float(3.14159265358979323846),
+			ArchiveType.Data([4, 255]),
+			ArchiveType.Map([]),
+			ArchiveType.Integer(-1),
+			ArchiveType.Array([]),
 			nil,
-			Format.Boolean(true),
-			Format.Array([
-				Format.String(""),
-				Format.Map([
-					Format.Integer(-7), Format.Boolean(false)
+			ArchiveType.Boolean(true),
+			ArchiveType.Array([
+				ArchiveType.String(""),
+				ArchiveType.Map([
+					ArchiveType.Integer(-7), ArchiveType.Boolean(false)
 					])
 				])
 			])
@@ -50,7 +50,7 @@ class Tests: XCTestCase {
 		print("data of size \(data.length): \(data)")
 		let i = NSInputStream(data: data)
 		i.open()
-		let g = try! Format(stream: i)
+		let g = try! ArchiveType(stream: i)
 		i.close()
 		
 		XCTAssertEqual(String(f), String(g))

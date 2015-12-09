@@ -11,7 +11,7 @@ import Foundation
 public typealias Byte = UInt8
 public typealias ByteArray = ContiguousArray<Byte>
 
-public protocol NumericType {
+public protocol AnyNumber {
 	
 	/// The bytes of the number, in little-endian order
 	var bytes: ByteArray { get }
@@ -25,7 +25,7 @@ var isLittleEndian: Bool {
 	return __CFByteOrder(UInt32(CFByteOrderGetCurrent())) == CFByteOrderLittleEndian
 }
 
-extension NumericType {
+extension AnyNumber {
 	
 	public var bytes: ByteArray {
 		var v = self
@@ -46,7 +46,7 @@ extension NumericType {
 	
 }
 
-public protocol AnyInteger: NumericType, Comparable, Equatable {
+public protocol AnyInteger: AnyNumber, Comparable, Equatable {
 	
 	init<T: AnyInteger>(_ v: T)
 	init(_ v: Int8)
@@ -140,7 +140,7 @@ extension Int: AnyInteger { }
 extension UInt: AnyInteger { }
 
 
-public protocol AnyFloat: NumericType, Comparable, Equatable {
+public protocol AnyFloat: AnyNumber, Comparable, Equatable {
 	
 	init<T: AnyFloat>(_ v: T)
 	init(_ v: Float32)

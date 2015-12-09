@@ -1,5 +1,5 @@
 //
-//  Formatting.swift
+//  Archiving.swift
 //  AOGF
 //
 //  Created by Greg Omelaenko on 8/12/2015.
@@ -8,10 +8,10 @@
 
 import Foundation
 
-public protocol Formatting {
+public protocol Archiving {
 	
-	init?(archivingFormat: Format)
+	init?(archivingType: ArchiveType)
 	
-	var archivingFormat: Format { get }
+	var archivingType: ArchiveType { get }
 	
 }
