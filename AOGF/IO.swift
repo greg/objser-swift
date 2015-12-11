@@ -1,5 +1,5 @@
 //
-//  Mapping.swift
+//  IO.swift
 //  AOGF
 //
 //  The MIT License (MIT)
@@ -25,20 +25,43 @@
 //  SOFTWARE.
 //
 
-public protocol Mapping: Archiving {
+import Foundation
+
+public class OutputStream {
 	
-	/// Initialise an instance of `self`, ready for property mapping.
-	/// - Remarks: This is a workaround for the impossibility of implementing initialisers as extensions on non-final classes.
-	static func initForMapping() -> Self
+	var bytes = ByteArray()
 	
-	/// Uses the provided mapper's `map` function to map its properties.
-	mutating func archiveMap(mapper: Mapper)
+	func write(bytes: ByteArray) {
+		self.bytes.appendContentsOf(bytes)
+	}
+	
+	func write(bytes: Byte...) {
+		self.bytes.appendContentsOf(bytes)
+	}
 	
 }
 
-public protocol Mapper {
+public class InputStream {
 	
-	/// Maps `v` for `key` in the current object.
-	func map<V: Archiving, K: Archiving>(inout v: V, forKey key: K)
+	private let bytes: ByteArray
+	private var index: Int = 0
+	
+	var hasBytesAvailable: Bool {
+		return index < bytes.count
+	}
+	
+	init(bytes: ByteArray) {
+		self.bytes = bytes
+	}
+	
+	func readByte() -> Byte {
+		return bytes[index++]
+	}
+	
+	func readBytes(length length: Int) -> ArraySlice<Byte> {
+		let slice = bytes[index..<(index+length)]
+		index += length
+		return slice
+	}
 	
 }

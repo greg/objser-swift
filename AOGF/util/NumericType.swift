@@ -2,8 +2,27 @@
 //  NumericType.swift
 //  AOGF
 //
-//  Created by Greg Omelaenko on 7/12/2015.
-//  Copyright © 2015 Greg Omelaenko. All rights reserved.
+//  The MIT License (MIT)
+//
+//  Copyright (c) 2015 Greg Omelaenko
+//
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in all
+//  copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//  SOFTWARE.
 //
 
 import Foundation
@@ -60,6 +79,8 @@ public protocol AnyInteger: AnyNumber, Comparable, Equatable {
 	init(_ v: Int)
 	init(_ v: UInt)
 	
+	init?<T: AnyInteger>(value v: T)
+	
 	var int8Value: Int8? { get }
 	var uint8Value: UInt8? { get }
 	var int16Value: Int16? { get }
@@ -73,6 +94,8 @@ public protocol AnyInteger: AnyNumber, Comparable, Equatable {
 	
 	static var min: Self { get }
 	static var max: Self { get }
+	
+	func convert<R: AnyInteger>(unsigned unsigned: Bool) -> R?
 	
 }
 
@@ -94,33 +117,39 @@ extension AnyInteger {
 		}
 	}
 	
-	func signedValue<R: AnyInteger where R: SignedIntegerType>() -> R? {
-		if sizeof(R) > sizeof(Self) { return R(self) }
-		else if self <= Self(R.max) {
-			if Self.min == Self(0) { return R(self) }
-			return self >= Self(R.min) ? R(self) : nil
-		}
-		return nil
+	public init?<T: AnyInteger>(value v: T) {
+		guard let v: Self = v.convert() else { return nil }
+		self = v
 	}
 	
-	func unsignedValue<R: AnyInteger where R: UnsignedIntegerType>() -> R? {
-		if self < Self(0) { return nil }
-		if sizeof(R) >= sizeof(Self) { return R(self) }
+	public func convert<R: AnyInteger>(unsigned unsigned: Bool = R.min == 0) -> R? {
+		if unsigned {
+			if self < Self(0) { return nil }
+			if sizeof(R) >= sizeof(Self) { return R(self) }
+			else {
+				return self <= Self(R.max) ? R(self) : nil
+			}
+		}
 		else {
-			return self <= Self(R.max) ? R(self) : nil
+			if sizeof(R) > sizeof(Self) { return R(self) }
+			else if self <= Self(R.max) {
+				if Self.min == Self(0) { return R(self) }
+				return self >= Self(R.min) ? R(self) : nil
+			}
+			return nil
 		}
 	}
 	
-	public var int8Value: Int8? { return signedValue() }
-	public var uint8Value: UInt8? { return unsignedValue() }
-	public var int16Value: Int16? { return signedValue() }
-	public var uint16Value: UInt16? { return unsignedValue() }
-	public var int32Value: Int32? { return signedValue() }
-	public var uint32Value: UInt32? { return unsignedValue() }
-	public var int64Value: Int64? { return signedValue() }
-	public var uint64Value: UInt64? { return unsignedValue() }
-	public var intValue: Int? { return signedValue() }
-	public var uintValue: UInt? { return unsignedValue() }
+	public var int8Value: Int8? { return convert() }
+	public var uint8Value: UInt8? { return convert() }
+	public var int16Value: Int16? { return convert() }
+	public var uint16Value: UInt16? { return convert() }
+	public var int32Value: Int32? { return convert() }
+	public var uint32Value: UInt32? { return convert() }
+	public var int64Value: Int64? { return convert() }
+	public var uint64Value: UInt64? { return convert() }
+	public var intValue: Int? { return convert() }
+	public var uintValue: UInt? { return convert() }
 	
 }
 
@@ -146,6 +175,8 @@ public protocol AnyFloat: AnyNumber, Comparable, Equatable {
 	init(_ v: Float32)
 	init(_ v: Float64)
 	
+	func convert<R: AnyFloat>() -> R
+	
 }
 
 extension AnyFloat {
@@ -154,6 +185,14 @@ extension AnyFloat {
 		switch v {
 		case let v as Float32: self = Self(v)
 		case let v as Float64: self = Self(v)
+		default: fatalError()
+		}
+	}
+	
+	public func convert<R: AnyFloat>() -> R {
+		switch self {
+		case let v as Float32: return R(v)
+		case let v as Float64: return R(v)
 		default: fatalError()
 		}
 	}

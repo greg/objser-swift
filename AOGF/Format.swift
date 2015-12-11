@@ -2,8 +2,27 @@
 //  Format.swift
 //  AOGF
 //
-//  Created by Greg Omelaenko on 9/12/2015.
-//  Copyright © 2015 Greg Omelaenko. All rights reserved.
+//  The MIT License (MIT)
+//
+//  Copyright (c) 2015 Greg Omelaenko
+//
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in all
+//  copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//  SOFTWARE.
 //
 
 /// Defines the AOGF formats.
@@ -34,14 +53,12 @@ enum Format: Byte {
 	case UInt64 = 0xca
 	
 	case Float32 = 0xcb
-	case Float64 = 0xcd
-	
-	case Pair = 0xcc
+	case Float64 = 0xcc
 	
 	/// 0x71 – 0x7f
 	case FString = 0x71
-	case VString = 0xce
-	case EString = 0xcf
+	case VString = 0xcd
+	case EString = 0xce
 	
 	/// 0x61 – 0x6f
 	case FData = 0x61
@@ -59,10 +76,10 @@ enum Format: Byte {
 	case Map = 0xd7
 	case EMap = 0xd8
 	
-	case Sentinel = 0xd9
+	case Sentinel = 0xcf
 	
-	/// 0xda – 0xdf
-	case Reserved = 0xda
+	/// 0xd9 – 0xdf
+	case Reserved = 0xd9
 	
 	var byte: Byte {
 		switch self {
@@ -81,7 +98,7 @@ enum Format: Byte {
 		case .FString: return 0x71...0x7f
 		case .FData: return 0x61...0x6f
 		case .FArray: return 0x41...0x5f
-		case .Reserved: return 0xda...0xdf
+		case .Reserved: return 0xd9...0xdf
 		default: return rawValue...rawValue
 		}
 	}

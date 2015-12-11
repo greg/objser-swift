@@ -2,20 +2,142 @@
 //  ArchiveType.swift
 //  AOGF
 //
-//  Created by Greg Omelaenko on 7/12/2015.
-//  Copyright © 2015 Greg Omelaenko. All rights reserved.
+//  The MIT License (MIT)
+//
+//  Copyright (c) 2015 Greg Omelaenko
+//
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in all
+//  copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//  SOFTWARE.
 //
 
-import class Foundation.NSOutputStream
-import class Foundation.NSInputStream
-import Foundation.NSString
+// Public wrapper around `ArchiveType`
+public struct ArchiveValue {
+	
+	enum Value {
+		case Type(ArchiveType)
+		case Array(AnySequence<Archiving>)
+		case Map(AnySequence<(Archiving, Archiving)>)
+	}
+	let value: Value
+	
+	init(_ v: ArchiveType) {
+		value = .Type(v)
+	}
+	
+	public init<T: AnyInteger>(integer: T) {
+		self.init(.Integer(integer))
+	}
+	
+	public init(`nil`: ()) {
+		self.init(.Nil)
+	}
+	
+	public init(boolean: Bool) {
+		self.init(.Boolean(boolean))
+	}
+	
+	public init<T: AnyFloat>(float: T) {
+		self.init(.Float(float))
+	}
+	
+	public init(string: String) {
+		self.init(.String(string))
+	}
+	
+	public init(data: ByteArray) {
+		self.init(.Data(data))
+	}
+	
+	public init<S: SequenceType where S.Generator.Element == Archiving>(array: S) {
+		value = .Array(AnySequence(array))
+	}
+	
+	public init<S: SequenceType where S.Generator.Element == (Archiving, Archiving)>(map: S) {
+		value = .Map(AnySequence(map))
+	}
+	
+	func archiveType() throws -> ArchiveType {
+		if case .Type(let t) = value { return t }
+		throw UnarchiveError.IncorrectType(self)
+	}
+	
+	public func integerValue<R: AnyInteger>() throws -> R {
+		if case .Integer(let v) = try archiveType() {
+			if let v: R = v.convert() { return v }
+			throw UnarchiveError.ConversionFailed(v)
+		}
+		throw UnarchiveError.IncorrectType(self)
+	}
+	
+	public func nilValue() throws -> () {
+		if case .Nil = try archiveType() { return () }
+		throw UnarchiveError.IncorrectType(self)
+	}
+	
+	public func booleanValue() throws -> Bool {
+		if case .Boolean(let v) = try archiveType() { return v }
+		throw UnarchiveError.IncorrectType(self)
+	}
+	
+	public func floatValue<R: AnyFloat>() throws -> R {
+		if case .Float(let v) = try archiveType() { return v.convert() }
+		throw UnarchiveError.IncorrectType(self)
+	}
+	
+	public func stringValue() throws -> Swift.String {
+		if case .String(let v) = try archiveType() { return v }
+		throw UnarchiveError.IncorrectType(self)
+	}
+	
+	public func dataValue() throws -> ByteArray {
+		if case .Data(let v) = try archiveType() { return v }
+		throw UnarchiveError.IncorrectType(self)
+	}
+	
+	public func arrayValue() throws -> AnySequence<Archiving> {
+		if case .Array(let v) = value { return v }
+		throw UnarchiveError.IncorrectType(self)
+	}
+	
+	public func mapValue() throws -> AnySequence<(Archiving, Archiving)> {
+		if case .Map(let v) = value { return v }
+		throw UnarchiveError.IncorrectType(self)
+	}
+	
+}
 
-public typealias ArchiveTypeArray = ContiguousArray<ArchiveType>
+extension ArchiveValue: NilLiteralConvertible {
+	
+	public init(nilLiteral: ()) {
+		self.init(.Nil)
+	}
+	
+}
 
 // MARK: Types
 
+typealias ArchiveTypeArray = ContiguousArray<ArchiveType>
+
 /// Defines the AOGF types.
-public enum ArchiveType {
+enum ArchiveType {
+	
+	case Placeholder
+	case Unresolved(Int)
 	
 	case Reference(UInt32)
 	case Integer(AnyInteger)
@@ -24,7 +146,6 @@ public enum ArchiveType {
 	case Float(AnyFloat)
 	case String(Swift.String)
 	case Data(ByteArray)
-	indirect case Pair(ArchiveType, ArchiveType)
 	indirect case Array(ArchiveTypeArray)
 	/// Provide an array of alternating keys and values.
 	indirect case Map(ArchiveTypeArray)
@@ -33,7 +154,7 @@ public enum ArchiveType {
 
 extension ArchiveType: NilLiteralConvertible {
 	
-	public init(nilLiteral: ()) {
+	init(nilLiteral: ()) {
 		self = .Nil
 	}
 	
@@ -41,19 +162,7 @@ extension ArchiveType: NilLiteralConvertible {
 
 // MARK: Encoding
 
-extension NSOutputStream {
-	
-	func write(bytes: ByteArray) -> Int {
-		return bytes.withUnsafeBufferPointer { buf in
-			return write(buf.baseAddress, maxLength: buf.count)
-		}
-	}
-	
-	func write(bytes: Byte...) -> Int {
-		return bytes.withUnsafeBufferPointer { buf in
-			return write(buf.baseAddress, maxLength: buf.count)
-		}
-	}
+extension OutputStream {
 	
 	/// Convenience method for writing `ArchiveType` data
 	func write(byte: Byte, _ array: ByteArray) {
@@ -65,7 +174,7 @@ extension NSOutputStream {
 
 extension ArchiveType {
 	
-	func writeTo(stream: NSOutputStream) {
+	func writeTo(stream: OutputStream, @noescape resolver: Int -> ArchiveType) {
 		switch self {
 			
 		case .Reference(let v):
@@ -113,7 +222,7 @@ extension ArchiveType {
 			else { fatalError() }
 			
 		case .String(let v):
-			switch v.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) {
+			switch v.utf8.count {
 			case 0:
 				stream.write(Format.EString.byte)
 			case 1...0b0000_1111:
@@ -145,11 +254,6 @@ extension ArchiveType {
 				stream.write(v)
 			}
 
-		case .Pair(let a, let b):
-			stream.write(Format.Pair.byte)
-			a.writeTo(stream)
-			b.writeTo(stream)
-			
 		case .Array(let v):
 			let c = v.count
 			switch c {
@@ -157,10 +261,10 @@ extension ArchiveType {
 				stream.write(Format.EArray.byte)
 			case 1...0b001_1111:
 				stream.write(Format.FArray.byte | Byte(c))
-				v.forEach { $0.writeTo(stream) }
+				v.forEach { $0.writeTo(stream, resolver: resolver) }
 			default:
 				stream.write(Format.VArray.byte)
-				v.forEach { $0.writeTo(stream) }
+				v.forEach { $0.writeTo(stream, resolver: resolver) }
 				stream.write(Format.Sentinel.byte)
 			}
 			
@@ -170,8 +274,12 @@ extension ArchiveType {
 			}
 			else {
 				stream.write(Format.Map.byte)
-				ArchiveType.Array(a).writeTo(stream)
+				ArchiveType.Array(a).writeTo(stream, resolver: resolver)
 			}
+		case .Placeholder:
+			fatalError("Placeholder in data being written.")
+		case .Unresolved(let u):
+			resolver(u).writeTo(stream, resolver: resolver)
 		}
 	}
 	
@@ -179,20 +287,10 @@ extension ArchiveType {
 
 // MARK: Decoding
 
-extension NSInputStream {
-	
-	func readByte() -> Byte {
-		var v: Byte = 0
-		let _ = read(&v, maxLength: 1)
-		return v
-	}
+extension InputStream {
 	
 	func readByteArray(length length: Int) -> ByteArray {
-		var bytes = ByteArray(count: length, repeatedValue: 0)
-		let _ = bytes.withUnsafeMutableBufferPointer { (inout buf: UnsafeMutableBufferPointer<Byte>) in
-			return read(buf.baseAddress, maxLength: length)
-		}
-		return bytes
+		return ByteArray(readBytes(length: length))
 	}
 	
 }
@@ -221,7 +319,7 @@ extension ArchiveType {
 	
 	}
 	
-	init(stream: NSInputStream) throws {
+	init(stream: InputStream) throws {
 		let v = stream.readByte()
 		switch v {
 		case Format.Ref6.range:
@@ -267,9 +365,6 @@ extension ArchiveType {
 			self = .Float(Float32(bytes: stream.readByteArray(length: 4)))
 		case Format.Float64.byte:
 			self = .Float(Float64(bytes: stream.readByteArray(length: 8)))
-			
-		case Format.Pair.byte:
-			self = try Pair(ArchiveType(stream: stream), ArchiveType(stream: stream))
 			
 		case Format.FString.range:
 			var b = stream.readByteArray(length: Int(v) & 0b1111)
