@@ -41,7 +41,7 @@
 		376BB9601C1528D100107180 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		376BB9671C152A2C00107180 /* Mapping.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mapping.swift; sourceTree = "<group>"; };
 		376BB96F1C155ACE00107180 /* ArchiveType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveType.swift; sourceTree = "<group>"; };
-		376BB9711C1565C200107180 /* NumericType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NumericType.swift; path = util/NumericType.swift; sourceTree = "<group>"; };
+		376BB9711C1565C200107180 /* NumericType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NumericType.swift; sourceTree = "<group>"; };
 		3778FD471C1A720D00EAF40B /* Archiver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Archiver.swift; sourceTree = "<group>"; };
 		3778FD491C1AA06E00EAF40B /* Archiving.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Archiving.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -65,6 +65,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		37251DB51C1AF00E002E14AE /* util */ = {
+			isa = PBXGroup;
+			children = (
+				376BB9711C1565C200107180 /* NumericType.swift */,
+				371A84511C1958D600C73663 /* IO.swift */,
+			);
+			path = util;
+			sourceTree = "<group>";
+		};
 		376BB9031C15248300107180 = {
 			isa = PBXGroup;
 			children = (
@@ -91,10 +100,9 @@
 				376BB9671C152A2C00107180 /* Mapping.swift */,
 				3716553C1C16F9A300F15190 /* Encoding.swift */,
 				3778FD471C1A720D00EAF40B /* Archiver.swift */,
-				371A84511C1958D600C73663 /* IO.swift */,
 				376BB96F1C155ACE00107180 /* ArchiveType.swift */,
 				373400C71C17BE7B00FA827A /* Format.swift */,
-				376BB9711C1565C200107180 /* NumericType.swift */,
+				37251DB51C1AF00E002E14AE /* util */,
 			);
 			path = AOGF;
 			sourceTree = "<group>";
