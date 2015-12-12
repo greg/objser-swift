@@ -26,13 +26,14 @@
 //
 
 import class Foundation.NSData
+import struct Foundation.CGFloat
 
 public protocol Encoding: Archiving {
 	
 	/// Initialise an instance of `self` from the given encoded value.
 	/// - Remarks: This is a workaround for the impossibility of implementing initialisers as extensions on non-final classes.
 	/// - Note: If you are able to implement a required initialiser on your type, conform to `InitableEncoding` instead.
-	static func initWithEncodedValue(encodedValue: ArchiveValue) throws -> Self
+	static func createWithEncodedValue(encodedValue: ArchiveValue) throws -> Self
 	
 	var encodedValue: ArchiveValue { get }
 	
@@ -47,7 +48,7 @@ public protocol InitableEncoding: Encoding {
 
 extension InitableEncoding {
 	
-	@transparent public static func initWithEncodedValue(encodedValue: ArchiveValue) throws -> Self {
+	@transparent public static func createWithEncodedValue(encodedValue: ArchiveValue) throws -> Self {
 		return try Self.init(encodedValue: encodedValue)
 	}
 	
@@ -158,7 +159,7 @@ extension String: InitableEncoding {
 
 extension NSData: Encoding {
 	
-	public static func initWithEncodedValue(encodedValue: ArchiveValue) throws -> Self {
+	public static func createWithEncodedValue(encodedValue: ArchiveValue) throws -> Self {
 		let bytes = try encodedValue.dataValue()
 		return bytes.withUnsafeBufferPointer { buf in
 			return self.init(bytes: buf.baseAddress, length: bytes.count)

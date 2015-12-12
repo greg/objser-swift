@@ -94,7 +94,7 @@ class Tests: XCTestCase {
 			var e: [String?]?
 			var f: Bool!
 			
-			private static func initForMapping() -> S {
+			private static func createForMapping() -> S {
 				return S(a: [:], b: [], c: false, d: nil, e: nil, f: nil)
 			}
 			

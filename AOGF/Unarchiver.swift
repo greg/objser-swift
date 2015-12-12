@@ -68,14 +68,14 @@ final class Unarchiver: Mapper {
 			defer { decoder.invalidate() }
 			if case .Array(let contents) = t {
 				decoder.contents = contents
-				return try T.initWithEncodedValue(ArchiveValue(arrayDecoder: decoder, valueDecoder: decoder)) as! _R
+				return try T.createWithEncodedValue(ArchiveValue(arrayDecoder: decoder, valueDecoder: decoder)) as! _R
 			}
 			else if case .Map(let contents) = t {
 				decoder.contents = contents
-				return try T.initWithEncodedValue(ArchiveValue(mapDecoder: decoder, valueDecoder: decoder)) as! _R
+				return try T.createWithEncodedValue(ArchiveValue(mapDecoder: decoder, valueDecoder: decoder)) as! _R
 			}
 			else {
-				return try T.initWithEncodedValue(ArchiveValue(t, decoder: decoder)) as! _R
+				return try T.createWithEncodedValue(ArchiveValue(t, decoder: decoder)) as! _R
 			}
 		}
 		else if let T = R.self as? Mapping.Type {
@@ -89,7 +89,7 @@ final class Unarchiver: Mapper {
 			maps.append(map)
 			mappingObjects.append(T.self)
 			
-			var v = T.initForMapping()
+			var v = T.createForMapping()
 			v.archiveMap(self)
 			
 			maps.removeLast()

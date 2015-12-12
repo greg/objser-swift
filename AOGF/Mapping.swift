@@ -29,7 +29,7 @@ public protocol Mapping: Archiving {
 	
 	/// Initialise an instance of `self`, ready for property mapping.
 	/// - Remarks: This is a workaround for the impossibility of implementing initialisers as extensions on non-final classes.
-	static func initForMapping() -> Self
+	static func createForMapping() -> Self
 	
 	/// Uses the provided mapper's `map` function to map its properties.
 	mutating func archiveMap(mapper: Mapper)
