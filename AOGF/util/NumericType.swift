@@ -113,7 +113,7 @@ extension AnyInteger {
 		case let v as UInt64: self = Self(v)
 		case let v as Int: self = Self(v)
 		case let v as UInt: self = Self(v)
-		default: fatalError()
+		default: preconditionFailure("Unrecognised AnyInteger type \(T.self).")
 		}
 	}
 	
@@ -185,7 +185,7 @@ extension AnyFloat {
 		switch v {
 		case let v as Float32: self = Self(v)
 		case let v as Float64: self = Self(v)
-		default: fatalError()
+		default: preconditionFailure("Unrecognised AnyFloat type \(T.self).")
 		}
 	}
 	
@@ -193,7 +193,7 @@ extension AnyFloat {
 		switch self {
 		case let v as Float32: return R(v)
 		case let v as Float64: return R(v)
-		default: fatalError()
+		default: preconditionFailure("Unrecognised AnyFloat type \(R.self).")
 		}
 	}
 	

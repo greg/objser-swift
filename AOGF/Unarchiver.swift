@@ -53,9 +53,11 @@ final class Unarchiver: Mapper {
 	
 	/// Unconstrained `decodeObject` implementation with runtime assertion of conformance to `Archiving`.
 	/// Used for decoding arrays and dictionaries whose conformance to Archiving can't be specialised.
-	/// - Requires: `_R : Archiving`. A runtime error will be thrown otherwise.
+	/// - Requires: `_R : Archiving`. A runtime error will be raised otherwise.
 	private func unconstrainedDecodeObject<_R/** : Archiving */>(t: ArchiveType) throws -> _R {
-		let R = _R.self as! Archiving.Type
+		guard let R = _R.self as? Archiving.Type else {
+			preconditionFailure("Could not decode object: \(_R.self) does not conform to Archiving.")
+		}
 		// Resolve references
 		if case .Reference(let i) = t {
 			return try unconstrainedDecodeObject(objects[Int(i)])
@@ -102,7 +104,7 @@ final class Unarchiver: Mapper {
 			return v as! _R
 		}
 		else {
-			archivingConformanceError(R)
+			archivingConformanceFailure(R)
 		}
 	}
 	

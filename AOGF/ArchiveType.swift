@@ -25,38 +25,6 @@
 //  SOFTWARE.
 //
 
-struct PairSequenceGenerator<T>: GeneratorType {
-	
-	typealias Element = (T, T)
-	private var generator: AnyGenerator<T>
-	
-	mutating func next() -> (T, T)? {
-		guard let a = generator.next(), let b = generator.next() else { return nil }
-		return (a, b)
-	}
-	
-}
-
-struct PairSequence<Element>: SequenceType {
-	
-	private let sequence: AnySequence<Element>
-	
-	init<S : SequenceType where S.Generator.Element == Element>(_ seq: S) {
-		sequence = AnySequence(seq)
-	}
-	
-	typealias Generator = PairSequenceGenerator<Element>
-	
-	func generate() -> PairSequenceGenerator<Element> {
-		return PairSequenceGenerator(generator: sequence.generate())
-	}
-	
-	func underestimateCount() -> Int {
-		return sequence.underestimateCount() / 2
-	}
-	
-}
-
 protocol ArrayDecoder {
 	
 	func decodeArray<R : Archiving>() throws -> AnySequence<R>
@@ -267,7 +235,7 @@ extension ArchiveType {
 			case 0...0xffff_ffff:
 				stream.write(Format.Ref32.byte, UInt32(v).bytes)
 			default:
-				fatalError()
+				preconditionFailure("Could not format reference value \(v) greater than 2³² - 1.")
 			}
 			
 		case .Integer(let v):
@@ -298,7 +266,7 @@ extension ArchiveType {
 		case .Float(let v):
 			if let v = v as? Float32 { stream.write(Format.Float32.byte, v.bytes) }
 			else if let v = v as? Float64 { stream.write(Format.Float64.byte, v.bytes) }
-			else { fatalError() }
+			else { preconditionFailure("Could not format unsupported float type \(v.dynamicType).") }
 			
 		case .String(let v):
 			switch v.utf8.count {
@@ -356,7 +324,7 @@ extension ArchiveType {
 				ArchiveType.Array(a).writeTo(stream, resolver: resolver)
 			}
 		case .Placeholder:
-			fatalError("Placeholder in data being written.")
+			preconditionFailure("Placeholder in data being written.")
 		case .Unresolved(let u):
 			resolver(u).writeTo(stream, resolver: resolver)
 		}
@@ -514,8 +482,7 @@ extension ArchiveType {
 			throw DecodeError.ReservedCode(v)
 			
 		default:
-			// this should never happen – this switch statement covers all byte values.
-			fatalError()
+			preconditionFailure("Unrecognised format value \(v). THIS SHOULD NEVER HAPPEN — the format reader should cover all possible byte values. Please report this issue, including the library version, and the unrecognised value \(v).")
 		}
 	}
 	

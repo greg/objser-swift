@@ -178,13 +178,12 @@ extension NSData: Encoding {
 extension Array: InitableEncoding {
 	
 	public init(encodedValue: ArchiveValue) throws {
-		if !(Element.self is Archiving.Type) {
-			fatalError("Array elements must conform to Archiving.")
-		}
+		precondition(Element.self is Archiving.Type, "Array element type \(Element.self) does not conform to Archiving.")
 		self = Array(try encodedValue.unconstrainedArrayValue())
 	}
 	
 	public var encodedValue: ArchiveValue {
+		precondition(Element.self is Archiving.Type, "Array element type \(Element.self) does not conform to Archiving.")
 		return ArchiveValue(array: self.lazy.map { $0 as! Archiving })
 	}
 	
@@ -193,13 +192,14 @@ extension Array: InitableEncoding {
 extension Dictionary: InitableEncoding {
 	
 	public init(encodedValue: ArchiveValue) throws {
-		if !(Key.self is Archiving.Type && Value.self is Archiving.Type) {
-			fatalError("Dictionary keys and values must conform to Archiving.")
-		}
+		precondition(Key.self is Archiving.Type, "Dictionary key type \(Key.self) does not conform to Archiving.")
+		precondition(Value.self is Archiving.Type, "Dictionary value type \(Value.self) does not conform to Archiving.")
 		self = Dictionary(sequence: try encodedValue.unconstrainedMapValue())
 	}
 	
 	public var encodedValue: ArchiveValue {
+		precondition(Key.self is Archiving.Type, "Dictionary key type \(Key.self) does not conform to Archiving.")
+		precondition(Value.self is Archiving.Type, "Dictionary value type \(Value.self) does not conform to Archiving.")
 		return ArchiveValue(map: self.lazy.map { ($0.0 as! Archiving, $0.1 as! Archiving) })
 	}
 	

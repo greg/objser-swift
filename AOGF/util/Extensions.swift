@@ -27,6 +27,38 @@
 
 import Foundation
 
+struct PairSequenceGenerator<T>: GeneratorType {
+	
+	typealias Element = (T, T)
+	private var generator: AnyGenerator<T>
+	
+	mutating func next() -> (T, T)? {
+		guard let a = generator.next(), let b = generator.next() else { return nil }
+		return (a, b)
+	}
+	
+}
+
+struct PairSequence<Element>: SequenceType {
+	
+	private let sequence: AnySequence<Element>
+	
+	init<S : SequenceType where S.Generator.Element == Element>(_ seq: S) {
+		sequence = AnySequence(seq)
+	}
+	
+	typealias Generator = PairSequenceGenerator<Element>
+	
+	func generate() -> PairSequenceGenerator<Element> {
+		return PairSequenceGenerator(generator: sequence.generate())
+	}
+	
+	func underestimateCount() -> Int {
+		return sequence.underestimateCount() / 2
+	}
+	
+}
+
 extension Dictionary {
 	
 	init<S : SequenceType where S.Generator.Element == (Key, Value)>(sequence: S) {

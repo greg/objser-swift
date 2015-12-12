@@ -67,7 +67,7 @@ class Tests: XCTestCase {
 //		let data = o.propertyForKey(NSStreamDataWrittenToMemoryStreamKey) as! NSData
 //		print("data of size \(data.length): \(data)")
 		let data = o.bytes
-		print("data of size \(data.count): \(data)")
+//		print("data of size \(data.count): \(data)")
 //		let i = NSInputStream(data: data)
 //		i.open()
 		let i = InputStream(bytes: data)

@@ -41,7 +41,8 @@ final class Archiver: Mapper {
 	private func index(v: Archiving) -> Int {
 		if let v = v as? Encoding {
 			let id = objects.count
-			switch v.encodedValue.value {
+			let ev = v.encodedValue
+			switch ev.value {
 			case .Type(let t):
 				objects.append(t)
 			case .EncodingArray(let s):
@@ -62,7 +63,7 @@ final class Archiver: Mapper {
 				}
 				objects[id] = .Map(a)
 			default:
-				fatalError()
+				preconditionFailure("Could not index case \(ev.value).")
 			}
 			return id
 		}
@@ -85,7 +86,7 @@ final class Archiver: Mapper {
 			return id
 		}
 		else {
-			archivingConformanceError(v.dynamicType)
+			archivingConformanceFailure(v.dynamicType)
 		}
 	}
 	
