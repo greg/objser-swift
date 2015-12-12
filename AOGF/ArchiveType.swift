@@ -25,18 +25,74 @@
 //  SOFTWARE.
 //
 
+struct PairSequenceGenerator<T>: GeneratorType {
+	
+	typealias Element = (T, T)
+	private var generator: AnyGenerator<T>
+	
+	mutating func next() -> (T, T)? {
+		guard let a = generator.next(), let b = generator.next() else { return nil }
+		return (a, b)
+	}
+	
+}
+
+struct PairSequence<Element>: SequenceType {
+	
+	private let sequence: AnySequence<Element>
+	
+	init<S : SequenceType where S.Generator.Element == Element>(_ seq: S) {
+		sequence = AnySequence(seq)
+	}
+	
+	typealias Generator = PairSequenceGenerator<Element>
+	
+	func generate() -> PairSequenceGenerator<Element> {
+		return PairSequenceGenerator(generator: sequence.generate())
+	}
+	
+	func underestimateCount() -> Int {
+		return sequence.underestimateCount() / 2
+	}
+	
+}
+
+protocol ArrayDecoder {
+	
+	func decodeArray<R : Archiving>() throws -> AnySequence<R>
+	func unconstrainedDecodeArray<_R>() throws -> AnySequence<_R>
+	
+}
+
+protocol MapDecoder {
+	
+	func decodeMap<K : Archiving, V : Archiving>() throws -> AnySequence<(K, V)>
+	func unconstrainedDecodeMap<_K, _V>() throws -> AnySequence<(_K, _V)>
+	
+}
+
 // Public wrapper around `ArchiveType`
 public struct ArchiveValue {
 	
 	enum Value {
 		case Type(ArchiveType)
-		case Array(AnySequence<Archiving>)
-		case Map(AnySequence<(Archiving, Archiving)>)
+		case EncodingArray(AnySequence<Archiving>)
+		case EncodingMap(AnySequence<(Archiving, Archiving)>)
+		case DecodingArray(ArrayDecoder)
+		case DecodingMap(MapDecoder)
 	}
 	let value: Value
 	
 	init(_ v: ArchiveType) {
 		value = .Type(v)
+	}
+	
+	init(arrayDecoder: ArrayDecoder) {
+		value = .DecodingArray(arrayDecoder)
+	}
+	
+	init(mapDecoder: MapDecoder) {
+		value = .DecodingMap(mapDecoder)
 	}
 	
 	public init<T: AnyInteger>(integer: T) {
@@ -64,11 +120,11 @@ public struct ArchiveValue {
 	}
 	
 	public init<S: SequenceType where S.Generator.Element == Archiving>(array: S) {
-		value = .Array(AnySequence(array))
+		value = .EncodingArray(AnySequence(array))
 	}
 	
 	public init<S: SequenceType where S.Generator.Element == (Archiving, Archiving)>(map: S) {
-		value = .Map(AnySequence(map))
+		value = .EncodingMap(AnySequence(map))
 	}
 	
 	func archiveType() throws -> ArchiveType {
@@ -109,13 +165,36 @@ public struct ArchiveValue {
 		throw UnarchiveError.IncorrectType(self)
 	}
 	
-	public func arrayValue() throws -> AnySequence<Archiving> {
-		if case .Array(let v) = value { return v }
+	/// Decode and return a sequence of values of type `R`.
+	public func arrayValue<R : Archiving>() throws -> AnySequence<R> {
+		if case .DecodingArray(let decoder) = value {
+			return try decoder.decodeArray()
+		}
 		throw UnarchiveError.IncorrectType(self)
 	}
 	
-	public func mapValue() throws -> AnySequence<(Archiving, Archiving)> {
-		if case .Map(let v) = value { return v }
+	/// Unconstrained equivalent of `arrayValue`, provided for convenience when implementing encoding on collection types, as protocol conformance cannot be constrained.
+	/// - Requires: `_R : Archiving`. A runtime error will be thrown otherwise.
+	public func unconstrainedArrayValue<_R>() throws -> AnySequence<_R> {
+		if case .DecodingArray(let decoder) = value {
+			return try decoder.unconstrainedDecodeArray()
+		}
+		throw UnarchiveError.IncorrectType(self)
+	}
+	
+	public func mapValue<K : Archiving, V : Archiving>() throws -> AnySequence<(K, V)> {
+		if case .DecodingMap(let decoder) = value {
+			return try decoder.decodeMap()
+		}
+		throw UnarchiveError.IncorrectType(self)
+	}
+	
+	/// Unconstrained equivalent of `mapValue`, provided for convenience when implementing encoding on collection types, as protocol conformance cannot be constrained.
+	/// - Requires: `_K : Archiving`, `_V : Archiving`. A runtime error will be thrown otherwise.
+	public func unconstrainedMapValue<_K, _V>() throws -> AnySequence<(_K, _V)> {
+		if case .DecodingMap(let decoder) = value {
+			return try decoder.unconstrainedDecodeMap()
+		}
 		throw UnarchiveError.IncorrectType(self)
 	}
 	

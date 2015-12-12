@@ -84,7 +84,7 @@ class Tests: XCTestCase {
 //		print(h)
     }
 	
-	func testArchiving() {
+	func testMapping() {
 		
 		struct S: Mapping {
 			var a: [String : Int]
@@ -92,7 +92,7 @@ class Tests: XCTestCase {
 			var c: Bool
 			
 			private static func initForMapping() -> S {
-				fatalError()
+				return S(a: [:], b: [], c: false)
 			}
 			
 			private mutating func archiveMap(mapper: Mapper) {
@@ -102,28 +102,20 @@ class Tests: XCTestCase {
 			}
 		}
 		
+		func eq(a: S, _ b: S) -> Bool {
+			return a.a == b.a && a.b == b.b && a.c == b.c
+		}
+		
 		let a = S(a: ["aoeu": 5, "cgp": -1], b: [4.6, 7.9], c: true)
 		
 		let o = OutputStream()
 		archive(a, to: o)
-		print("result", o.bytes.map({ String($0, radix: 16) }).joinWithSeparator(" "))
 		
 		let i = InputStream(bytes: o.bytes)
-		var x = 0
-		while i.hasBytesAvailable {
-			let b = try! ArchiveType(stream: i)
-			print("unarchiving", x, ":", b)
-			x++
-		}
+		let b = try! unarchive(i) as S
+		print("unarchived", b)
 		
-//		let t = a.archivingType
-//		print(t)
-//		
-//		let b = try! [String : Int](archivingType: t)
-//		print(b)
-//		
-//		XCTAssertEqual(a, b)
-		
+		XCTAssert(eq(a, b))
 	}
     
 }

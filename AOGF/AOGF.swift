@@ -25,19 +25,19 @@
 //  SOFTWARE.
 //
 
-import Foundation
-
 public enum UnarchiveError: ErrorType {
 	
+	case EmptyInput
 	case IncorrectType(ArchiveValue)
 	case ConversionFailed(Any)
+	case MapFailed(type: Mapping.Type, key: String)
 	
 }
 
 public func archive<T: Archiving>(rootObject: T, to stream: OutputStream) {
-	Archiver(rootObject: rootObject).writeTo(stream)
+	Archiver(encodeRootObject: rootObject).writeTo(stream)
 }
 
-public func unarchive<T: Archiving>(data: NSData) throws -> T {
-	fatalError()
+public func unarchive<T: Archiving>(stream: InputStream) throws -> T {
+	return try Unarchiver(readFromStream: stream).decodeRootObject()
 }

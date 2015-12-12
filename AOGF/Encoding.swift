@@ -178,7 +178,10 @@ extension NSData: Encoding {
 extension Array: InitableEncoding {
 	
 	public init(encodedValue: ArchiveValue) throws {
-		fatalError()
+		if !(Element.self is Archiving.Type) {
+			fatalError("Array elements must conform to Archiving.")
+		}
+		self = Array(try encodedValue.unconstrainedArrayValue())
 	}
 	
 	public var encodedValue: ArchiveValue {
@@ -190,7 +193,10 @@ extension Array: InitableEncoding {
 extension Dictionary: InitableEncoding {
 	
 	public init(encodedValue: ArchiveValue) throws {
-		fatalError()
+		if !(Key.self is Archiving.Type && Value.self is Archiving.Type) {
+			fatalError("Dictionary keys and values must conform to Archiving.")
+		}
+		self = Dictionary(sequence: try encodedValue.unconstrainedMapValue())
 	}
 	
 	public var encodedValue: ArchiveValue {

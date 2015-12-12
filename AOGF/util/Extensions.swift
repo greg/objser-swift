@@ -1,5 +1,5 @@
 //
-//  Mapping.swift
+//  Extensions.swift
 //  AOGF
 //
 //  The MIT License (MIT)
@@ -25,20 +25,15 @@
 //  SOFTWARE.
 //
 
-public protocol Mapping: Archiving {
-	
-	/// Initialise an instance of `self`, ready for property mapping.
-	/// - Remarks: This is a workaround for the impossibility of implementing initialisers as extensions on non-final classes.
-	static func initForMapping() -> Self
-	
-	/// Uses the provided mapper's `map` function to map its properties.
-	mutating func archiveMap(mapper: Mapper)
-	
-}
+import Foundation
 
-public protocol Mapper {
+extension Dictionary {
 	
-	/// Maps `v` for `key` in the current object.
-	func map<V : Archiving>(inout v: V, forKey key: String)
+	init<S : SequenceType where S.Generator.Element == (Key, Value)>(sequence: S) {
+		self.init(minimumCapacity: sequence.underestimateCount())
+		for (k, v) in sequence {
+			self[k] = v
+		}
+	}
 	
 }

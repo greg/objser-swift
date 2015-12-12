@@ -33,8 +33,8 @@ public protocol Archiving {
 
 /// Print an explanatory message and unconditionally stop execution.
 /// - Requires: `obj` does not conform to either `Encoding` or `Mapping`.
-@noreturn func archivingConformanceError(obj: Archiving) {
+@noreturn func archivingConformanceError(type: Archiving.Type) {
 	// don't confuse the user if the implementation is broken
-	assert(!(obj is Encoding || obj is Mapping))
-	fatalError("Type \(obj.dynamicType) conforms to Archiving, but not Encoding or Mapping.")
+	assert(!(type is Encoding.Type || type is Mapping.Type))
+	fatalError("Type \(type) conforms to Archiving, but not Encoding or Mapping.")
 }

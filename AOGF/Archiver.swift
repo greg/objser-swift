@@ -29,7 +29,7 @@ final class Archiver: Mapper {
 	
 	// MARK: Initialisers
 	
-	init<T: Archiving>(rootObject obj: T) {
+	init<T : Archiving>(encodeRootObject obj: T) {
 		index(obj)
 	}
 	
@@ -44,7 +44,7 @@ final class Archiver: Mapper {
 			switch v.encodedValue.value {
 			case .Type(let t):
 				objects.append(t)
-			case .Array(let s):
+			case .EncodingArray(let s):
 				objects.append(.Placeholder)
 				var a = ArchiveTypeArray()
 				a.reserveCapacity(s.underestimateCount())
@@ -52,7 +52,7 @@ final class Archiver: Mapper {
 					a.append(.Unresolved(index(v)))
 				}
 				objects[id] = .Array(a)
-			case .Map(let s):
+			case .EncodingMap(let s):
 				objects.append(.Placeholder)
 				var a = ArchiveTypeArray()
 				a.reserveCapacity(s.underestimateCount() * 2)
@@ -61,6 +61,8 @@ final class Archiver: Mapper {
 					a.append(.Unresolved(index(v)))
 				}
 				objects[id] = .Map(a)
+			default:
+				fatalError()
 			}
 			return id
 		}
@@ -83,7 +85,7 @@ final class Archiver: Mapper {
 			return id
 		}
 		else {
-			archivingConformanceError(v)
+			archivingConformanceError(v.dynamicType)
 		}
 	}
 	
@@ -97,7 +99,7 @@ final class Archiver: Mapper {
 		return maps.popLast()!
 	}
 	
-	func map<V: Archiving, K: Archiving>(inout v: V, forKey key: K) {
+	func map<V : Archiving>(inout v: V, forKey key: String) {
 		maps[maps.count-1].append(.Unresolved(index(key)))
 		maps[maps.count-1].append(.Unresolved(index(v)))
 	}
