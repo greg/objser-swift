@@ -174,6 +174,7 @@ public protocol AnyFloat: AnyNumber, Comparable, Equatable {
 	init<T: AnyFloat>(_ v: T)
 	init(_ v: Float32)
 	init(_ v: Float64)
+	init(_ v: CGFloat)
 	
 	func convert<R: AnyFloat>() -> R
 	
@@ -185,6 +186,7 @@ extension AnyFloat {
 		switch v {
 		case let v as Float32: self = Self(v)
 		case let v as Float64: self = Self(v)
+		case let v as CGFloat: self = Self(v)
 		default: preconditionFailure("Unrecognised AnyFloat type \(T.self).")
 		}
 	}
@@ -193,6 +195,7 @@ extension AnyFloat {
 		switch self {
 		case let v as Float32: return R(v)
 		case let v as Float64: return R(v)
+		case let v as CGFloat: return R(v)
 		default: preconditionFailure("Unrecognised AnyFloat type \(R.self).")
 		}
 	}
@@ -201,3 +204,4 @@ extension AnyFloat {
 
 extension Float32: AnyFloat { }
 extension Float64: AnyFloat { }
+extension CGFloat: AnyFloat { }

@@ -142,6 +142,7 @@ extension AnyFloat where Self: InitableEncoding {
 
 extension Float32: InitableEncoding { }
 extension Float64: InitableEncoding { }
+extension CGFloat: InitableEncoding { }
 
 
 extension String: InitableEncoding {
