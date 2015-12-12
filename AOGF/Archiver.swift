@@ -40,12 +40,14 @@ final class Archiver: Mapper {
 	
 	private func index(v: Archiving) -> Int {
 		if let v = v as? Encoding {
-			let id = objects.count
 			let ev = v.encodedValue
 			switch ev.value {
 			case .Type(let t):
+				let id = objects.count
 				objects.append(t)
+				return id
 			case .EncodingArray(let s):
+				let id = objects.count
 				objects.append(.Placeholder)
 				var a = ArchiveTypeArray()
 				a.reserveCapacity(s.underestimateCount())
@@ -53,7 +55,9 @@ final class Archiver: Mapper {
 					a.append(.Unresolved(index(v)))
 				}
 				objects[id] = .Array(a)
+				return id
 			case .EncodingMap(let s):
+				let id = objects.count
 				objects.append(.Placeholder)
 				var a = ArchiveTypeArray()
 				a.reserveCapacity(s.underestimateCount() * 2)
@@ -62,10 +66,12 @@ final class Archiver: Mapper {
 					a.append(.Unresolved(index(v)))
 				}
 				objects[id] = .Map(a)
+				return id
+			case .EncodingValue(let v):
+				return index(v)
 			default:
 				preconditionFailure("Could not index case \(ev.value).")
 			}
-			return id
 		}
 		else if let v = v as? Mapping {
 			// Only objects can cause cycles
@@ -94,6 +100,10 @@ final class Archiver: Mapper {
 	
 	private var maps = ContiguousArray<ArchiveTypeArray>()
 	
+	func lastMapAppend(v: ArchiveType) {
+		maps[maps.count-1].append(v)
+	}
+	
 	private func map(var v: Mapping) -> ArchiveTypeArray {
 		maps.append(ArchiveTypeArray())
 		v.archiveMap(self)
@@ -101,8 +111,8 @@ final class Archiver: Mapper {
 	}
 	
 	func map<V : Archiving>(inout v: V, forKey key: String) {
-		maps[maps.count-1].append(.Unresolved(index(key)))
-		maps[maps.count-1].append(.Unresolved(index(v)))
+		lastMapAppend(.Unresolved(index(key)))
+		lastMapAppend(.Unresolved(index(v)))
 	}
 	
 	// MARK: Output

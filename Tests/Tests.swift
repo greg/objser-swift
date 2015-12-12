@@ -90,32 +90,40 @@ class Tests: XCTestCase {
 			var a: [String : Int]
 			var b: [Float]
 			var c: Bool
+			var d: Int!
+			var e: [String?]?
+			var f: Bool!
 			
 			private static func initForMapping() -> S {
-				return S(a: [:], b: [], c: false)
+				return S(a: [:], b: [], c: false, d: nil, e: nil, f: nil)
 			}
 			
 			private mutating func archiveMap(mapper: Mapper) {
 				mapper.map(&a, forKey: "a")
-				mapper.map(&b, forKey: "à very long name that will øverflow into vstring .")
+				mapper.map(&b, forKey: "à very long name that will øverflow into vstring Å.")
 				mapper.map(&c, forKey: "ç")
+				mapper.map(&d, forKey: "d (implicit optional)")
+				mapper.map(&e, forKey: "e (explicit optional)")
+				mapper.map(&f, forKey: "implicit f")
 			}
 		}
 		
-		func eq(a: S, _ b: S) -> Bool {
-			return a.a == b.a && a.b == b.b && a.c == b.c
-		}
 		
-		let a = S(a: ["aoeu": 5, "cgp": -1], b: [4.6, 7.9], c: true)
+		let a = S(a: ["aoeu": 5, "cgp": -1], b: [4.6, 7.9], c: true, d: nil, e: ["ao´u", nil, "Å"], f: nil)
 		
 		let o = OutputStream()
 		archive(a, to: o)
 		
 		let i = InputStream(bytes: o.bytes)
-		let b = try! unarchive(i) as S
-		print("unarchived", b)
-		
-		XCTAssert(eq(a, b))
+		do {
+			let b = try unarchive(i) as S
+			print("unarchived", b)
+			
+			XCTAssertEqual(String(a), String(b))
+		}
+		catch {
+			XCTFail("\(error)")
+		}
 	}
     
 }

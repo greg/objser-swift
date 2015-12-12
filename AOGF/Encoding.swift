@@ -204,3 +204,38 @@ extension Dictionary: InitableEncoding {
 	}
 	
 }
+
+extension Optional: InitableEncoding {
+	
+	public init(encodedValue: ArchiveValue) throws {
+		precondition(Wrapped.self is Archiving.Type, "Wrapped type \(Wrapped.self) does not conform to Archiving.")
+		do {
+			try encodedValue.nilValue()
+			self = nil
+		}
+		catch {
+			self = try encodedValue.unconstrainedArchivingValue() as Wrapped
+		}
+	}
+	
+	public var encodedValue: ArchiveValue {
+		precondition(Wrapped.self is Archiving.Type, "Wrapped type \(Wrapped.self) does not conform to Archiving.")
+		if let w = self {
+			return ArchiveValue(archivingValue: w as! Archiving)
+		}
+		return nil
+	}
+	
+}
+
+extension ImplicitlyUnwrappedOptional: InitableEncoding {
+	
+	public init(encodedValue: ArchiveValue) throws {
+		self = try Optional<Wrapped>(encodedValue: encodedValue)
+	}
+	
+	public var encodedValue: ArchiveValue {
+		return (self as Optional<Wrapped>).encodedValue
+	}
+	
+}

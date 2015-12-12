@@ -64,18 +64,18 @@ final class Unarchiver: Mapper {
 		}
 		
 		if let T = R.self as? Encoding.Type {
+			var decoder = ItemDecoder(value: t, unarchiver: self)
+			defer { decoder.invalidate() }
 			if case .Array(let contents) = t {
-				var decoder = ItemDecoder(contents: contents, unarchiver: self)
-				defer { decoder.invalidate() }
-				return try T.initWithEncodedValue(ArchiveValue(arrayDecoder: decoder)) as! _R
+				decoder.contents = contents
+				return try T.initWithEncodedValue(ArchiveValue(arrayDecoder: decoder, valueDecoder: decoder)) as! _R
 			}
 			else if case .Map(let contents) = t {
-				var decoder = ItemDecoder(contents: contents, unarchiver: self)
-				defer { decoder.invalidate() }
-				return try T.initWithEncodedValue(ArchiveValue(mapDecoder: decoder)) as! _R
+				decoder.contents = contents
+				return try T.initWithEncodedValue(ArchiveValue(mapDecoder: decoder, valueDecoder: decoder)) as! _R
 			}
 			else {
-				return try T.initWithEncodedValue(ArchiveValue(t)) as! _R
+				return try T.initWithEncodedValue(ArchiveValue(t, decoder: decoder)) as! _R
 			}
 		}
 		else if let T = R.self as? Mapping.Type {
@@ -114,11 +114,17 @@ final class Unarchiver: Mapper {
 	
 	// MARK: Array & Map decoding
 	
-	private struct ItemDecoder: ArrayDecoder, MapDecoder {
+	private struct ItemDecoder: ArrayDecoder, MapDecoder, ValueDecoder {
 		
-		let contents: ArchiveTypeArray
+		let value: ArchiveType
+		var contents: ArchiveTypeArray!
 		var unarchiver: Unarchiver!
 		mutating func invalidate() { unarchiver = nil }
+		
+		init(value: ArchiveType, unarchiver: Unarchiver) {
+			self.value = value
+			self.unarchiver = unarchiver
+		}
 		
 		private func decodeArray<R : Archiving>() throws -> AnySequence<R> {
 			return AnySequence(try contents.lazy.map { try unarchiver.decodeObject($0) })
@@ -140,6 +146,14 @@ final class Unarchiver: Mapper {
 			}))
 		}
 		
+		private func decodeValue<R : Archiving>() throws -> R {
+			return try unarchiver.decodeObject(value)
+		}
+		
+		private func unconstrainedDecodeValue<_R>() throws -> _R {
+			return try unarchiver.unconstrainedDecodeObject(value)
+		}
+		
 	}
 	
 	// MARK: Mapper
@@ -149,7 +163,6 @@ final class Unarchiver: Mapper {
 	
 	func map<V : Archiving>(inout v: V, forKey key: String) {
 		guard let t = maps.last![key] else {
-			// TODO: handle failure here such as to return silently then throw from decodeObject
 			mapErrorToThrow = UnarchiveError.MapFailed(type: mappingObjects.last!, key: key)
 			return
 		}

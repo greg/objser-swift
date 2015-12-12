@@ -39,35 +39,47 @@ protocol MapDecoder {
 	
 }
 
+protocol ValueDecoder {
+	
+	func decodeValue<R : Archiving>() throws -> R
+	func unconstrainedDecodeValue<_R>() throws -> _R
+	
+}
+
 // Public wrapper around `ArchiveType`
-public struct ArchiveValue {
+public struct ArchiveValue: NilLiteralConvertible {
 	
 	enum Value {
 		case Type(ArchiveType)
 		case EncodingArray(AnySequence<Archiving>)
 		case EncodingMap(AnySequence<(Archiving, Archiving)>)
+		case EncodingValue(Archiving)
 		case DecodingArray(ArrayDecoder)
 		case DecodingMap(MapDecoder)
 	}
 	let value: Value
+	private(set) var valueDecoder: ValueDecoder! = nil
 	
-	init(_ v: ArchiveType) {
+	init(_ v: ArchiveType, decoder: ValueDecoder! = nil) {
 		value = .Type(v)
+		valueDecoder = decoder
 	}
 	
-	init(arrayDecoder: ArrayDecoder) {
+	init(arrayDecoder: ArrayDecoder, valueDecoder: ValueDecoder) {
 		value = .DecodingArray(arrayDecoder)
+		self.valueDecoder = valueDecoder
 	}
 	
-	init(mapDecoder: MapDecoder) {
+	init(mapDecoder: MapDecoder, valueDecoder: ValueDecoder) {
 		value = .DecodingMap(mapDecoder)
+		self.valueDecoder = valueDecoder
 	}
 	
 	public init<T: AnyInteger>(integer: T) {
 		self.init(.Integer(integer))
 	}
 	
-	public init(`nil`: ()) {
+	public init(nilLiteral: ()) {
 		self.init(.Nil)
 	}
 	
@@ -93,6 +105,10 @@ public struct ArchiveValue {
 	
 	public init<S: SequenceType where S.Generator.Element == (Archiving, Archiving)>(map: S) {
 		value = .EncodingMap(AnySequence(map))
+	}
+	
+	public init(archivingValue: Archiving) {
+		value = .EncodingValue(archivingValue)
 	}
 	
 	func archiveType() throws -> ArchiveType {
@@ -166,12 +182,14 @@ public struct ArchiveValue {
 		throw UnarchiveError.IncorrectType(self)
 	}
 	
-}
-
-extension ArchiveValue: NilLiteralConvertible {
+	public func archivingValue<R : Archiving>() throws -> R {
+		return try valueDecoder.decodeValue()
+	}
 	
-	public init(nilLiteral: ()) {
-		self.init(.Nil)
+	/// Unconstrained equivalent of `archivingValue`, provided for convenience when implementing encoding on wrapping types, as protocol conformance cannot be constrained.
+	/// - Requires: `_R : Archiving`. A runtime error will be thrown otherwise.
+	public func unconstrainedArchivingValue<_R>() throws -> _R {
+		return try valueDecoder.unconstrainedDecodeValue()
 	}
 	
 }
