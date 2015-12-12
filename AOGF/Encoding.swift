@@ -25,8 +25,13 @@
 //  SOFTWARE.
 //
 
-import class Foundation.NSData
-import struct Foundation.CGFloat
+#if os(OSX)
+	import class Foundation.NSData
+	import struct Foundation.CGFloat
+#elseif os(iOS)
+	import Foundation
+	import CoreGraphics
+#endif
 
 public protocol Encoding: Archiving {
 	

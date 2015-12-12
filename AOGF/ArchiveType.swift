@@ -299,7 +299,7 @@ extension ArchiveType {
 			}
 			
 		case .Data(let v):
-			let c = v.count
+			let c = UInt64(v.count)
 			switch c {
 			case 0:
 				stream.write(Format.EData.byte)

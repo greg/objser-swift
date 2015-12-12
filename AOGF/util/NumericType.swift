@@ -26,6 +26,9 @@
 //
 
 import Foundation
+#if os(iOS)
+	import CoreGraphics
+#endif
 
 public typealias Byte = UInt8
 public typealias ByteArray = ContiguousArray<Byte>
