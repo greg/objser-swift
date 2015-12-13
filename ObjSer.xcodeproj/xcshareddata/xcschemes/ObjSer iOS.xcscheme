@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "377129FD1C1C710900169D1C"
-               BuildableName = "ObjSer.temp_caseinsensitive_rename.framework"
+               BuildableName = "ObjSer.framework"
                BlueprintName = "ObjSer iOS"
                ReferencedContainer = "container:ObjSer.xcodeproj">
             </BuildableReference>
@@ -33,7 +33,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "37712A4B1C1C77AF00169D1C"
-               BuildableName = "ObjSer.temp_caseinsensitive_rename.xctest"
+               BuildableName = "ObjSerTests-iOS.xctest"
                BlueprintName = "ObjSerTests iOS"
                ReferencedContainer = "container:ObjSer.xcodeproj">
             </BuildableReference>
@@ -43,7 +43,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "377129FD1C1C710900169D1C"
-            BuildableName = "ObjSer.temp_caseinsensitive_rename.framework"
+            BuildableName = "ObjSer.framework"
             BlueprintName = "ObjSer iOS"
             ReferencedContainer = "container:ObjSer.xcodeproj">
          </BuildableReference>
@@ -65,7 +65,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "377129FD1C1C710900169D1C"
-            BuildableName = "ObjSer.temp_caseinsensitive_rename.framework"
+            BuildableName = "ObjSer.framework"
             BlueprintName = "ObjSer iOS"
             ReferencedContainer = "container:ObjSer.xcodeproj">
          </BuildableReference>
@@ -83,7 +83,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "377129FD1C1C710900169D1C"
-            BuildableName = "ObjSer.temp_caseinsensitive_rename.framework"
+            BuildableName = "ObjSer.framework"
             BlueprintName = "ObjSer iOS"
             ReferencedContainer = "container:ObjSer.xcodeproj">
          </BuildableReference>
