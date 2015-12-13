@@ -1,6 +1,6 @@
 //
-//  Mapping.swift
-//  AOGF
+//  ObjSer.swift
+//  ObjSer
 //
 //  The MIT License (MIT)
 //
@@ -25,20 +25,19 @@
 //  SOFTWARE.
 //
 
-public protocol Mapping: Archiving {
+public enum DeserialiseError: ErrorType {
 	
-	/// Initialise an instance of `self`, ready for property mapping.
-	/// - Remarks: This is a workaround for the impossibility of implementing initialisers as extensions on non-final classes.
-	static func createForMapping() -> Self
-	
-	/// Uses the provided mapper's `map` function to map its properties.
-	mutating func archiveMap(mapper: Mapper)
+	case EmptyInput
+	case IncorrectType(Serialised)
+	case ConversionFailed(Any)
+	case MapFailed(type: Mappable.Type, key: String)
 	
 }
 
-public protocol Mapper {
-	
-	/// Maps `v` for `key` in the current object.
-	func map<V : Archiving>(inout v: V, forKey key: String)
-	
+public func serialise<T: Serialisable>(rootObject: T, to stream: OutputStream) {
+	Serialiser(serialiseRoot: rootObject).writeTo(stream)
+}
+
+public func deserialise<T: Serialisable>(stream: InputStream) throws -> T {
+	return try Deserialiser(readFrom: stream).deserialiseRoot()
 }

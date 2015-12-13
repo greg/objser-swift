@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "377129D11C1C703300169D1C"
-               BuildableName = "AOGF.framework"
-               BlueprintName = "AOGF Mac"
-               ReferencedContainer = "container:AOGF.xcodeproj">
+               BuildableName = "ObjSer.temp_caseinsensitive_rename.framework"
+               BlueprintName = "ObjSer Mac"
+               ReferencedContainer = "container:ObjSer.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "37712A2D1C1C778E00169D1C"
-               BuildableName = "AOGFTests Mac.xctest"
-               BlueprintName = "AOGFTests Mac"
-               ReferencedContainer = "container:AOGF.xcodeproj">
+               BuildableName = "ObjSer.temp_caseinsensitive_rename.xctest"
+               BlueprintName = "ObjSerTests Mac"
+               ReferencedContainer = "container:ObjSer.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -43,9 +43,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "377129D11C1C703300169D1C"
-            BuildableName = "AOGF.framework"
-            BlueprintName = "AOGF Mac"
-            ReferencedContainer = "container:AOGF.xcodeproj">
+            BuildableName = "ObjSer.temp_caseinsensitive_rename.framework"
+            BlueprintName = "ObjSer Mac"
+            ReferencedContainer = "container:ObjSer.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -65,9 +65,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "377129D11C1C703300169D1C"
-            BuildableName = "AOGF.framework"
-            BlueprintName = "AOGF Mac"
-            ReferencedContainer = "container:AOGF.xcodeproj">
+            BuildableName = "ObjSer.temp_caseinsensitive_rename.framework"
+            BlueprintName = "ObjSer Mac"
+            ReferencedContainer = "container:ObjSer.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -83,9 +83,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "377129D11C1C703300169D1C"
-            BuildableName = "AOGF.framework"
-            BlueprintName = "AOGF Mac"
-            ReferencedContainer = "container:AOGF.xcodeproj">
+            BuildableName = "ObjSer.temp_caseinsensitive_rename.framework"
+            BlueprintName = "ObjSer Mac"
+            ReferencedContainer = "container:ObjSer.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

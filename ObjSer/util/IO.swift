@@ -1,6 +1,6 @@
 //
-//  Extensions.swift
-//  AOGF
+//  IO.swift
+//  ObjSer
 //
 //  The MIT License (MIT)
 //
@@ -25,47 +25,41 @@
 //  SOFTWARE.
 //
 
-import Foundation
-
-struct PairSequenceGenerator<T>: GeneratorType {
+public class OutputStream {
 	
-	typealias Element = (T, T)
-	private var generator: AnyGenerator<T>
+	var bytes = ByteArray()
 	
-	mutating func next() -> (T, T)? {
-		guard let a = generator.next(), let b = generator.next() else { return nil }
-		return (a, b)
+	func write(bytes: ByteArray) {
+		self.bytes.appendContentsOf(bytes)
+	}
+	
+	func write(bytes: Byte...) {
+		self.bytes.appendContentsOf(bytes)
 	}
 	
 }
 
-struct PairSequence<Element>: SequenceType {
+public class InputStream {
 	
-	private let sequence: AnySequence<Element>
+	private let bytes: ByteArray
+	private var index: Int = 0
 	
-	init<S : SequenceType where S.Generator.Element == Element>(_ seq: S) {
-		sequence = AnySequence(seq)
+	var hasBytesAvailable: Bool {
+		return index < bytes.count
 	}
 	
-	typealias Generator = PairSequenceGenerator<Element>
-	
-	func generate() -> PairSequenceGenerator<Element> {
-		return PairSequenceGenerator(generator: sequence.generate())
+	init(bytes: ByteArray) {
+		self.bytes = bytes
 	}
 	
-	func underestimateCount() -> Int {
-		return sequence.underestimateCount() / 2
+	func readByte() -> Byte {
+		return bytes[index++]
 	}
 	
-}
-
-extension Dictionary {
-	
-	init<S : SequenceType where S.Generator.Element == (Key, Value)>(sequence: S) {
-		self.init(minimumCapacity: sequence.underestimateCount())
-		for (k, v) in sequence {
-			self[k] = v
-		}
+	func readBytes(length length: Int) -> ArraySlice<Byte> {
+		let slice = bytes[index..<(index+length)]
+		index += length
+		return slice
 	}
 	
 }

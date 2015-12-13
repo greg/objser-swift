@@ -1,6 +1,6 @@
 //
-//  ArchiveType.swift
-//  AOGF
+//  Serialised.swift
+//  ObjSer
 //
 //  The MIT License (MIT)
 //
@@ -27,40 +27,40 @@
 
 protocol ArrayDecoder {
 	
-	func decodeArray<R : Archiving>() throws -> AnySequence<R>
+	func decodeArray<R : Serialisable>() throws -> AnySequence<R>
 	func unconstrainedDecodeArray<_R>() throws -> AnySequence<_R>
 	
 }
 
 protocol MapDecoder {
 	
-	func decodeMap<K : Archiving, V : Archiving>() throws -> AnySequence<(K, V)>
+	func decodeMap<K : Serialisable, V : Serialisable>() throws -> AnySequence<(K, V)>
 	func unconstrainedDecodeMap<_K, _V>() throws -> AnySequence<(_K, _V)>
 	
 }
 
 protocol ValueDecoder {
 	
-	func decodeValue<R : Archiving>() throws -> R
+	func decodeValue<R : Serialisable>() throws -> R
 	func unconstrainedDecodeValue<_R>() throws -> _R
 	
 }
 
-// Public wrapper around `ArchiveType`
-public struct ArchiveValue: NilLiteralConvertible {
+// Public wrapper around `Primitive`
+public struct Serialised: NilLiteralConvertible {
 	
 	enum Value {
-		case Type(ArchiveType)
-		case EncodingArray(AnySequence<Archiving>)
-		case EncodingMap(AnySequence<(Archiving, Archiving)>)
-		case EncodingValue(Archiving)
+		case Type(Primitive)
+		case EncodingArray(AnySequence<Serialisable>)
+		case EncodingMap(AnySequence<(Serialisable, Serialisable)>)
+		case EncodingValue(Serialisable)
 		case DecodingArray(ArrayDecoder)
 		case DecodingMap(MapDecoder)
 	}
 	let value: Value
 	private(set) var valueDecoder: ValueDecoder! = nil
 	
-	init(_ v: ArchiveType, decoder: ValueDecoder! = nil) {
+	init(_ v: Primitive, decoder: ValueDecoder! = nil) {
 		value = .Type(v)
 		valueDecoder = decoder
 	}
@@ -99,110 +99,106 @@ public struct ArchiveValue: NilLiteralConvertible {
 		self.init(.Data(data))
 	}
 	
-	public init<S: SequenceType where S.Generator.Element == Archiving>(array: S) {
+	public init<S: SequenceType where S.Generator.Element == Serialisable>(array: S) {
 		value = .EncodingArray(AnySequence(array))
 	}
 	
-	public init<S: SequenceType where S.Generator.Element == (Archiving, Archiving)>(map: S) {
+	public init<S: SequenceType where S.Generator.Element == (Serialisable, Serialisable)>(map: S) {
 		value = .EncodingMap(AnySequence(map))
 	}
 	
-	public init(archivingValue: Archiving) {
+	public init(archivingValue: Serialisable) {
 		value = .EncodingValue(archivingValue)
 	}
 	
-	func archiveType() throws -> ArchiveType {
+	func archiveType() throws -> Primitive {
 		if case .Type(let t) = value { return t }
-		throw UnarchiveError.IncorrectType(self)
+		throw DeserialiseError.IncorrectType(self)
 	}
 	
 	public func integerValue<R: AnyInteger>() throws -> R {
 		if case .Integer(let v) = try archiveType() {
 			if let v: R = v.convert() { return v }
-			throw UnarchiveError.ConversionFailed(v)
+			throw DeserialiseError.ConversionFailed(v)
 		}
-		throw UnarchiveError.IncorrectType(self)
+		throw DeserialiseError.IncorrectType(self)
 	}
 	
 	public func nilValue() throws -> () {
 		if case .Nil = try archiveType() { return () }
-		throw UnarchiveError.IncorrectType(self)
+		throw DeserialiseError.IncorrectType(self)
 	}
 	
 	public func booleanValue() throws -> Bool {
 		if case .Boolean(let v) = try archiveType() { return v }
-		throw UnarchiveError.IncorrectType(self)
+		throw DeserialiseError.IncorrectType(self)
 	}
 	
 	public func floatValue<R: AnyFloat>() throws -> R {
 		if case .Float(let v) = try archiveType() { return v.convert() }
-		throw UnarchiveError.IncorrectType(self)
+		throw DeserialiseError.IncorrectType(self)
 	}
 	
 	public func stringValue() throws -> Swift.String {
 		if case .String(let v) = try archiveType() { return v }
-		throw UnarchiveError.IncorrectType(self)
+		throw DeserialiseError.IncorrectType(self)
 	}
 	
 	public func dataValue() throws -> ByteArray {
 		if case .Data(let v) = try archiveType() { return v }
-		throw UnarchiveError.IncorrectType(self)
+		throw DeserialiseError.IncorrectType(self)
 	}
 	
 	/// Decode and return a sequence of values of type `R`.
-	public func arrayValue<R : Archiving>() throws -> AnySequence<R> {
+	public func arrayValue<R : Serialisable>() throws -> AnySequence<R> {
 		if case .DecodingArray(let decoder) = value {
 			return try decoder.decodeArray()
 		}
-		throw UnarchiveError.IncorrectType(self)
+		throw DeserialiseError.IncorrectType(self)
 	}
 	
 	/// Unconstrained equivalent of `arrayValue`, provided for convenience when implementing encoding on collection types, as protocol conformance cannot be constrained.
-	/// - Requires: `_R : Archiving`. A runtime error will be thrown otherwise.
+	/// - Requires: `_R : Serialisable`. A runtime error will be thrown otherwise.
 	public func unconstrainedArrayValue<_R>() throws -> AnySequence<_R> {
 		if case .DecodingArray(let decoder) = value {
 			return try decoder.unconstrainedDecodeArray()
 		}
-		throw UnarchiveError.IncorrectType(self)
+		throw DeserialiseError.IncorrectType(self)
 	}
 	
-	public func mapValue<K : Archiving, V : Archiving>() throws -> AnySequence<(K, V)> {
+	public func mapValue<K : Serialisable, V : Serialisable>() throws -> AnySequence<(K, V)> {
 		if case .DecodingMap(let decoder) = value {
 			return try decoder.decodeMap()
 		}
-		throw UnarchiveError.IncorrectType(self)
+		throw DeserialiseError.IncorrectType(self)
 	}
 	
 	/// Unconstrained equivalent of `mapValue`, provided for convenience when implementing encoding on collection types, as protocol conformance cannot be constrained.
-	/// - Requires: `_K : Archiving`, `_V : Archiving`. A runtime error will be thrown otherwise.
+	/// - Requires: `_K : Serialisable`, `_V : Serialisable`. A runtime error will be thrown otherwise.
 	public func unconstrainedMapValue<_K, _V>() throws -> AnySequence<(_K, _V)> {
 		if case .DecodingMap(let decoder) = value {
 			return try decoder.unconstrainedDecodeMap()
 		}
-		throw UnarchiveError.IncorrectType(self)
+		throw DeserialiseError.IncorrectType(self)
 	}
 	
-	public func archivingValue<R : Archiving>() throws -> R {
+	public func archivingValue<R : Serialisable>() throws -> R {
 		return try valueDecoder.decodeValue()
 	}
 	
 	/// Unconstrained equivalent of `archivingValue`, provided for convenience when implementing encoding on wrapping types, as protocol conformance cannot be constrained.
-	/// - Requires: `_R : Archiving`. A runtime error will be thrown otherwise.
+	/// - Requires: `_R : Serialisable`. A runtime error will be thrown otherwise.
 	public func unconstrainedArchivingValue<_R>() throws -> _R {
 		return try valueDecoder.unconstrainedDecodeValue()
 	}
 	
 }
 
-// MARK: Types
-
-typealias ArchiveTypeArray = ContiguousArray<ArchiveType>
-
-/// Defines the AOGF types.
-enum ArchiveType {
+/// Defines the ObjSer primitive types.
+enum Primitive {
 	
-	case Placeholder
-	case Unresolved(Int)
+	/// A promised value with an attached function that will be called to resolve the primitive for writing.
+	case Promised(() -> Primitive)
 	
 	case Reference(UInt32)
 	case Integer(AnyInteger)
@@ -211,17 +207,9 @@ enum ArchiveType {
 	case Float(AnyFloat)
 	case String(Swift.String)
 	case Data(ByteArray)
-	indirect case Array(ArchiveTypeArray)
+	indirect case Array(ContiguousArray<Primitive>)
 	/// Provide an array of alternating keys and values.
-	indirect case Map(ArchiveTypeArray)
-	
-}
-
-extension ArchiveType: NilLiteralConvertible {
-	
-	init(nilLiteral: ()) {
-		self = .Nil
-	}
+	indirect case Map(ContiguousArray<Primitive>)
 	
 }
 
@@ -229,7 +217,7 @@ extension ArchiveType: NilLiteralConvertible {
 
 extension OutputStream {
 	
-	/// Convenience method for writing `ArchiveType` data
+	/// Convenience method for writing `Primitive` data
 	func write(byte: Byte, _ array: ByteArray) {
 		write(byte)
 		write(array)
@@ -237,10 +225,13 @@ extension OutputStream {
 	
 }
 
-extension ArchiveType {
+extension Primitive {
 	
-	func writeTo(stream: OutputStream, @noescape resolver: Int -> ArchiveType) {
+	func writeTo(stream: OutputStream) {
 		switch self {
+			
+		case .Promised(let resolve):
+			resolve().writeTo(stream)
 			
 		case .Reference(let v):
 			switch v {
@@ -299,7 +290,7 @@ extension ArchiveType {
 			}
 			
 		case .Data(let v):
-			let c = UInt64(v.count)
+			let c = v.count
 			switch c {
 			case 0:
 				stream.write(Format.EData.byte)
@@ -311,11 +302,8 @@ extension ArchiveType {
 			case 0...0xffff:
 				stream.write(Format.VData16.byte, UInt16(c).bytes)
 				stream.write(v)
-			case 0...0xffff_ffff:
-				stream.write(Format.VData32.byte, UInt32(c).bytes)
-				stream.write(v)
 			default:
-				stream.write(Format.VData64.byte, UInt64(c).bytes)
+				stream.write(Format.VData32.byte, UInt32(c).bytes)
 				stream.write(v)
 			}
 
@@ -326,10 +314,10 @@ extension ArchiveType {
 				stream.write(Format.EArray.byte)
 			case 1...0b001_1111:
 				stream.write(Format.FArray.byte | Byte(c))
-				v.forEach { $0.writeTo(stream, resolver: resolver) }
+				v.forEach { $0.writeTo(stream) }
 			default:
 				stream.write(Format.VArray.byte)
-				v.forEach { $0.writeTo(stream, resolver: resolver) }
+				v.forEach { $0.writeTo(stream) }
 				stream.write(Format.Sentinel.byte)
 			}
 			
@@ -339,12 +327,8 @@ extension ArchiveType {
 			}
 			else {
 				stream.write(Format.Map.byte)
-				ArchiveType.Array(a).writeTo(stream, resolver: resolver)
+				Primitive.Array(a).writeTo(stream)
 			}
-		case .Placeholder:
-			preconditionFailure("Placeholder in data being written.")
-		case .Unresolved(let u):
-			resolver(u).writeTo(stream, resolver: resolver)
 		}
 	}
 	
@@ -373,18 +357,18 @@ extension String {
 	
 }
 
-extension ArchiveType {
+extension Primitive {
 	
-	enum DecodeError: ErrorType {
+	enum FormatError: ErrorType {
 		
 		case SentinelReached
 		case ReservedCode(Byte)
-		case InvalidMapArray(ArchiveType)
+		case InvalidMapArray(Primitive)
 		case InvalidString(ByteArray)
 	
 	}
 	
-	init(stream: InputStream) throws {
+	init(readFrom stream: InputStream) throws {
 		let v = stream.readByte()
 		switch v {
 		case Format.Ref6.range:
@@ -435,7 +419,7 @@ extension ArchiveType {
 			var b = stream.readByteArray(length: Int(v) & 0b1111)
 			b.append(0)
 			guard let str = Swift.String(UTF8Bytes: b) else {
-				throw DecodeError.InvalidString(b)
+				throw FormatError.InvalidString(b)
 			}
 			self = .String(str)
 		case Format.VString.byte:
@@ -444,7 +428,7 @@ extension ArchiveType {
 				b.append(stream.readByte())
 			}
 			guard let str = Swift.String(UTF8Bytes: b) else {
-				throw DecodeError.InvalidString(b)
+				throw FormatError.InvalidString(b)
 			}
 			self = .String(str)
 		case Format.EString.byte:
@@ -460,44 +444,41 @@ extension ArchiveType {
 		case Format.VData32.byte:
 			let len = Swift.UInt32(bytes: stream.readByteArray(length: 4))
 			self = .Data(stream.readByteArray(length: Int(len)))
-		case Format.VData64.byte:
-			let len = Swift.UInt64(bytes: stream.readByteArray(length: 8))
-			self = .Data(stream.readByteArray(length: Int(len)))
 		case Format.EData.byte:
 			self = .Data([])
 			
 		case Format.FArray.range:
 			let len = Int(v & 0b1_1111)
-			var array = ArchiveTypeArray()
+			var array = ContiguousArray<Primitive>()
 			array.reserveCapacity(len)
 			for _ in 0..<len {
-				array.append(try ArchiveType(stream: stream))
+				array.append(try Primitive(readFrom: stream))
 			}
 			self = .Array(array)
 		case Format.VArray.byte:
-			var array = ArchiveTypeArray()
+			var array = ContiguousArray<Primitive>()
 			while true {
-				do { array.append(try ArchiveType(stream: stream)) }
-				catch DecodeError.SentinelReached { break }
+				do { array.append(try Primitive(readFrom: stream)) }
+				catch FormatError.SentinelReached { break }
 			}
 			self = .Array(array)
 		case Format.EArray.byte:
 			self = .Array([])
 			
 		case Format.Map.byte:
-			let a = try ArchiveType(stream: stream)
+			let a = try Primitive(readFrom: stream)
 			guard case .Array(let v) = a else {
-				throw DecodeError.InvalidMapArray(a)
+				throw FormatError.InvalidMapArray(a)
 			}
 			self = .Map(v)
 		case Format.EMap.byte:
 			self = .Map([])
 			
 		case Format.Sentinel.byte:
-			throw DecodeError.SentinelReached
+			throw FormatError.SentinelReached
 			
 		case Format.Reserved.range:
-			throw DecodeError.ReservedCode(v)
+			throw FormatError.ReservedCode(v)
 			
 		default:
 			preconditionFailure("Unrecognised format value \(v). THIS SHOULD NEVER HAPPEN — the format reader should cover all possible byte values. Please report this issue, including the library version, and the unrecognised value \(v).")

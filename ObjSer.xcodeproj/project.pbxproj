@@ -7,34 +7,36 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		377129D61C1C703300169D1C /* AOGF.h in Headers */ = {isa = PBXBuildFile; fileRef = 377129D51C1C703300169D1C /* AOGF.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		37712A071C1C72BA00169D1C /* AOGF.h in Headers */ = {isa = PBXBuildFile; fileRef = 377129D51C1C703300169D1C /* AOGF.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		37712A101C1C747000169D1C /* AOGF.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A081C1C747000169D1C /* AOGF.swift */; };
-		37712A111C1C747000169D1C /* Archiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A091C1C747000169D1C /* Archiver.swift */; };
-		37712A121C1C747000169D1C /* ArchiveType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0A1C1C747000169D1C /* ArchiveType.swift */; };
-		37712A131C1C747000169D1C /* Archiving.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0B1C1C747000169D1C /* Archiving.swift */; };
-		37712A141C1C747000169D1C /* Encoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0C1C1C747000169D1C /* Encoding.swift */; };
+		377129D61C1C703300169D1C /* ObjSer.h in Headers */ = {isa = PBXBuildFile; fileRef = 377129D51C1C703300169D1C /* ObjSer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		37712A071C1C72BA00169D1C /* ObjSer.h in Headers */ = {isa = PBXBuildFile; fileRef = 377129D51C1C703300169D1C /* ObjSer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		37712A101C1C747000169D1C /* ObjSer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A081C1C747000169D1C /* ObjSer.swift */; };
+		37712A111C1C747000169D1C /* Serialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A091C1C747000169D1C /* Serialiser.swift */; };
+		37712A121C1C747000169D1C /* Serialised.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0A1C1C747000169D1C /* Serialised.swift */; };
+		37712A131C1C747000169D1C /* Serialisable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0B1C1C747000169D1C /* Serialisable.swift */; };
+		37712A141C1C747000169D1C /* Conformance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0C1C1C747000169D1C /* Conformance.swift */; };
 		37712A151C1C747000169D1C /* Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0D1C1C747000169D1C /* Format.swift */; };
-		37712A161C1C747000169D1C /* Mapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0E1C1C747000169D1C /* Mapping.swift */; };
-		37712A171C1C747000169D1C /* Unarchiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0F1C1C747000169D1C /* Unarchiver.swift */; };
-		37712A1C1C1C747700169D1C /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A191C1C747700169D1C /* Extensions.swift */; };
+		37712A161C1C747000169D1C /* Mappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0E1C1C747000169D1C /* Mappable.swift */; };
+		37712A171C1C747000169D1C /* Deserialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0F1C1C747000169D1C /* Deserialiser.swift */; };
+		37712A1C1C1C747700169D1C /* DictionaryInit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A191C1C747700169D1C /* DictionaryInit.swift */; };
 		37712A1D1C1C747700169D1C /* IO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A1A1C1C747700169D1C /* IO.swift */; };
 		37712A1E1C1C747700169D1C /* NumericType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A1B1C1C747700169D1C /* NumericType.swift */; };
-		37712A1F1C1C74A300169D1C /* AOGF.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A081C1C747000169D1C /* AOGF.swift */; };
-		37712A201C1C74A300169D1C /* Archiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A091C1C747000169D1C /* Archiver.swift */; };
-		37712A211C1C74A300169D1C /* ArchiveType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0A1C1C747000169D1C /* ArchiveType.swift */; };
-		37712A221C1C74A300169D1C /* Archiving.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0B1C1C747000169D1C /* Archiving.swift */; };
-		37712A231C1C74A300169D1C /* Encoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0C1C1C747000169D1C /* Encoding.swift */; };
+		37712A1F1C1C74A300169D1C /* ObjSer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A081C1C747000169D1C /* ObjSer.swift */; };
+		37712A201C1C74A300169D1C /* Serialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A091C1C747000169D1C /* Serialiser.swift */; };
+		37712A211C1C74A300169D1C /* Serialised.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0A1C1C747000169D1C /* Serialised.swift */; };
+		37712A221C1C74A300169D1C /* Serialisable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0B1C1C747000169D1C /* Serialisable.swift */; };
+		37712A231C1C74A300169D1C /* Conformance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0C1C1C747000169D1C /* Conformance.swift */; };
 		37712A241C1C74A300169D1C /* Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0D1C1C747000169D1C /* Format.swift */; };
-		37712A251C1C74A300169D1C /* Mapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0E1C1C747000169D1C /* Mapping.swift */; };
-		37712A261C1C74A300169D1C /* Unarchiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0F1C1C747000169D1C /* Unarchiver.swift */; };
-		37712A271C1C74A300169D1C /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A191C1C747700169D1C /* Extensions.swift */; };
+		37712A251C1C74A300169D1C /* Mappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0E1C1C747000169D1C /* Mappable.swift */; };
+		37712A261C1C74A300169D1C /* Deserialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0F1C1C747000169D1C /* Deserialiser.swift */; };
+		37712A271C1C74A300169D1C /* DictionaryInit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A191C1C747700169D1C /* DictionaryInit.swift */; };
 		37712A281C1C74A300169D1C /* IO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A1A1C1C747700169D1C /* IO.swift */; };
 		37712A291C1C74A300169D1C /* NumericType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A1B1C1C747700169D1C /* NumericType.swift */; };
-		37712A331C1C778E00169D1C /* AOGF.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 377129D21C1C703300169D1C /* AOGF.framework */; };
-		37712A511C1C77AF00169D1C /* AOGF.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 377129FE1C1C710900169D1C /* AOGF.framework */; };
+		37712A331C1C778E00169D1C /* ObjSer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 377129D21C1C703300169D1C /* ObjSer.framework */; };
+		37712A511C1C77AF00169D1C /* ObjSer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 377129FE1C1C710900169D1C /* ObjSer.framework */; };
 		37712A591C1C783500169D1C /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A581C1C782500169D1C /* Tests.swift */; };
 		37712A5A1C1C783600169D1C /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A581C1C782500169D1C /* Tests.swift */; };
+		37712A8C1C1D642000169D1C /* PairSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A8B1C1D642000169D1C /* PairSequence.swift */; };
+		37712A8D1C1D643600169D1C /* PairSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A8B1C1D642000169D1C /* PairSequence.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,27 +57,28 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		377129D21C1C703300169D1C /* AOGF.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AOGF.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		377129D51C1C703300169D1C /* AOGF.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AOGF.h; sourceTree = "<group>"; };
+		377129D21C1C703300169D1C /* ObjSer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ObjSer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		377129D51C1C703300169D1C /* ObjSer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjSer.h; sourceTree = "<group>"; };
 		377129D71C1C703300169D1C /* Info-Mac.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Mac.plist"; sourceTree = "<group>"; };
-		377129FE1C1C710900169D1C /* AOGF.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AOGF.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		377129FE1C1C710900169D1C /* ObjSer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ObjSer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		37712A061C1C729D00169D1C /* Info-iOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-iOS.plist"; sourceTree = "<group>"; };
-		37712A081C1C747000169D1C /* AOGF.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AOGF.swift; sourceTree = "<group>"; };
-		37712A091C1C747000169D1C /* Archiver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Archiver.swift; sourceTree = "<group>"; };
-		37712A0A1C1C747000169D1C /* ArchiveType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveType.swift; sourceTree = "<group>"; };
-		37712A0B1C1C747000169D1C /* Archiving.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Archiving.swift; sourceTree = "<group>"; };
-		37712A0C1C1C747000169D1C /* Encoding.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Encoding.swift; sourceTree = "<group>"; };
+		37712A081C1C747000169D1C /* ObjSer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObjSer.swift; sourceTree = "<group>"; };
+		37712A091C1C747000169D1C /* Serialiser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Serialiser.swift; sourceTree = "<group>"; };
+		37712A0A1C1C747000169D1C /* Serialised.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Serialised.swift; sourceTree = "<group>"; };
+		37712A0B1C1C747000169D1C /* Serialisable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Serialisable.swift; sourceTree = "<group>"; };
+		37712A0C1C1C747000169D1C /* Conformance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Conformance.swift; sourceTree = "<group>"; };
 		37712A0D1C1C747000169D1C /* Format.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Format.swift; sourceTree = "<group>"; };
-		37712A0E1C1C747000169D1C /* Mapping.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mapping.swift; sourceTree = "<group>"; };
-		37712A0F1C1C747000169D1C /* Unarchiver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Unarchiver.swift; sourceTree = "<group>"; };
-		37712A191C1C747700169D1C /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		37712A0E1C1C747000169D1C /* Mappable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mappable.swift; sourceTree = "<group>"; };
+		37712A0F1C1C747000169D1C /* Deserialiser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Deserialiser.swift; sourceTree = "<group>"; };
+		37712A191C1C747700169D1C /* DictionaryInit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DictionaryInit.swift; sourceTree = "<group>"; };
 		37712A1A1C1C747700169D1C /* IO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IO.swift; sourceTree = "<group>"; };
 		37712A1B1C1C747700169D1C /* NumericType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NumericType.swift; sourceTree = "<group>"; };
-		37712A2E1C1C778E00169D1C /* AOGFTests Mac.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "AOGFTests Mac.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		37712A2E1C1C778E00169D1C /* ObjSerTests-Mac.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ObjSerTests-Mac.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		37712A321C1C778E00169D1C /* Info-Mac.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Mac.plist"; sourceTree = "<group>"; };
-		37712A4C1C1C77AF00169D1C /* AOGFTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "AOGFTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		37712A4C1C1C77AF00169D1C /* ObjSerTests-iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ObjSerTests-iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		37712A501C1C77AF00169D1C /* Info-iOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-iOS.plist"; sourceTree = "<group>"; };
 		37712A581C1C782500169D1C /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
+		37712A8B1C1D642000169D1C /* PairSequence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PairSequence.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,7 +100,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				37712A331C1C778E00169D1C /* AOGF.framework in Frameworks */,
+				37712A331C1C778E00169D1C /* ObjSer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,7 +108,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				37712A511C1C77AF00169D1C /* AOGF.framework in Frameworks */,
+				37712A511C1C77AF00169D1C /* ObjSer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -115,7 +118,7 @@
 		377129C81C1C703300169D1C = {
 			isa = PBXGroup;
 			children = (
-				377129D41C1C703300169D1C /* AOGF */,
+				377129D41C1C703300169D1C /* ObjSer */,
 				37712A571C1C782500169D1C /* Tests */,
 				377129D31C1C703300169D1C /* Products */,
 			);
@@ -124,37 +127,38 @@
 		377129D31C1C703300169D1C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				377129D21C1C703300169D1C /* AOGF.framework */,
-				377129FE1C1C710900169D1C /* AOGF.framework */,
-				37712A2E1C1C778E00169D1C /* AOGFTests Mac.xctest */,
-				37712A4C1C1C77AF00169D1C /* AOGFTests iOS.xctest */,
+				377129D21C1C703300169D1C /* ObjSer.framework */,
+				377129FE1C1C710900169D1C /* ObjSer.framework */,
+				37712A2E1C1C778E00169D1C /* ObjSerTests-Mac.xctest */,
+				37712A4C1C1C77AF00169D1C /* ObjSerTests-iOS.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		377129D41C1C703300169D1C /* AOGF */ = {
+		377129D41C1C703300169D1C /* ObjSer */ = {
 			isa = PBXGroup;
 			children = (
-				377129D51C1C703300169D1C /* AOGF.h */,
+				377129D51C1C703300169D1C /* ObjSer.h */,
 				377129D71C1C703300169D1C /* Info-Mac.plist */,
 				37712A061C1C729D00169D1C /* Info-iOS.plist */,
-				37712A081C1C747000169D1C /* AOGF.swift */,
-				37712A091C1C747000169D1C /* Archiver.swift */,
-				37712A0A1C1C747000169D1C /* ArchiveType.swift */,
-				37712A0B1C1C747000169D1C /* Archiving.swift */,
-				37712A0C1C1C747000169D1C /* Encoding.swift */,
+				37712A081C1C747000169D1C /* ObjSer.swift */,
+				37712A0B1C1C747000169D1C /* Serialisable.swift */,
+				37712A0E1C1C747000169D1C /* Mappable.swift */,
+				37712A091C1C747000169D1C /* Serialiser.swift */,
+				37712A0F1C1C747000169D1C /* Deserialiser.swift */,
+				37712A0A1C1C747000169D1C /* Serialised.swift */,
 				37712A0D1C1C747000169D1C /* Format.swift */,
-				37712A0E1C1C747000169D1C /* Mapping.swift */,
-				37712A0F1C1C747000169D1C /* Unarchiver.swift */,
+				37712A0C1C1C747000169D1C /* Conformance.swift */,
 				37712A181C1C747700169D1C /* util */,
 			);
-			path = AOGF;
+			path = ObjSer;
 			sourceTree = "<group>";
 		};
 		37712A181C1C747700169D1C /* util */ = {
 			isa = PBXGroup;
 			children = (
-				37712A191C1C747700169D1C /* Extensions.swift */,
+				37712A8B1C1D642000169D1C /* PairSequence.swift */,
+				37712A191C1C747700169D1C /* DictionaryInit.swift */,
 				37712A1A1C1C747700169D1C /* IO.swift */,
 				37712A1B1C1C747700169D1C /* NumericType.swift */,
 			);
@@ -178,7 +182,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				377129D61C1C703300169D1C /* AOGF.h in Headers */,
+				377129D61C1C703300169D1C /* ObjSer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,16 +190,16 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				37712A071C1C72BA00169D1C /* AOGF.h in Headers */,
+				37712A071C1C72BA00169D1C /* ObjSer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		377129D11C1C703300169D1C /* AOGF Mac */ = {
+		377129D11C1C703300169D1C /* ObjSer Mac */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 377129E61C1C703300169D1C /* Build configuration list for PBXNativeTarget "AOGF Mac" */;
+			buildConfigurationList = 377129E61C1C703300169D1C /* Build configuration list for PBXNativeTarget "ObjSer Mac" */;
 			buildPhases = (
 				377129CD1C1C703300169D1C /* Sources */,
 				377129CE1C1C703300169D1C /* Frameworks */,
@@ -206,14 +210,14 @@
 			);
 			dependencies = (
 			);
-			name = "AOGF Mac";
+			name = "ObjSer Mac";
 			productName = AOGF;
-			productReference = 377129D21C1C703300169D1C /* AOGF.framework */;
+			productReference = 377129D21C1C703300169D1C /* ObjSer.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		377129FD1C1C710900169D1C /* AOGF iOS */ = {
+		377129FD1C1C710900169D1C /* ObjSer iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 37712A031C1C710900169D1C /* Build configuration list for PBXNativeTarget "AOGF iOS" */;
+			buildConfigurationList = 37712A031C1C710900169D1C /* Build configuration list for PBXNativeTarget "ObjSer iOS" */;
 			buildPhases = (
 				377129F91C1C710900169D1C /* Sources */,
 				377129FA1C1C710900169D1C /* Frameworks */,
@@ -224,14 +228,14 @@
 			);
 			dependencies = (
 			);
-			name = "AOGF iOS";
+			name = "ObjSer iOS";
 			productName = "AOGF iOS";
-			productReference = 377129FE1C1C710900169D1C /* AOGF.framework */;
+			productReference = 377129FE1C1C710900169D1C /* ObjSer.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		37712A2D1C1C778E00169D1C /* AOGFTests Mac */ = {
+		37712A2D1C1C778E00169D1C /* ObjSerTests Mac */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 37712A361C1C778E00169D1C /* Build configuration list for PBXNativeTarget "AOGFTests Mac" */;
+			buildConfigurationList = 37712A361C1C778E00169D1C /* Build configuration list for PBXNativeTarget "ObjSerTests Mac" */;
 			buildPhases = (
 				37712A2A1C1C778E00169D1C /* Sources */,
 				37712A2B1C1C778E00169D1C /* Frameworks */,
@@ -242,14 +246,14 @@
 			dependencies = (
 				37712A351C1C778E00169D1C /* PBXTargetDependency */,
 			);
-			name = "AOGFTests Mac";
+			name = "ObjSerTests Mac";
 			productName = "AOGFTests-Mac";
-			productReference = 37712A2E1C1C778E00169D1C /* AOGFTests Mac.xctest */;
+			productReference = 37712A2E1C1C778E00169D1C /* ObjSerTests-Mac.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		37712A4B1C1C77AF00169D1C /* AOGFTests iOS */ = {
+		37712A4B1C1C77AF00169D1C /* ObjSerTests iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 37712A541C1C77AF00169D1C /* Build configuration list for PBXNativeTarget "AOGFTests iOS" */;
+			buildConfigurationList = 37712A541C1C77AF00169D1C /* Build configuration list for PBXNativeTarget "ObjSerTests iOS" */;
 			buildPhases = (
 				37712A481C1C77AF00169D1C /* Sources */,
 				37712A491C1C77AF00169D1C /* Frameworks */,
@@ -260,9 +264,9 @@
 			dependencies = (
 				37712A531C1C77AF00169D1C /* PBXTargetDependency */,
 			);
-			name = "AOGFTests iOS";
+			name = "ObjSerTests iOS";
 			productName = "AOGFTests iOS";
-			productReference = 37712A4C1C1C77AF00169D1C /* AOGFTests iOS.xctest */;
+			productReference = 37712A4C1C1C77AF00169D1C /* ObjSerTests-iOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -289,7 +293,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 377129CC1C1C703300169D1C /* Build configuration list for PBXProject "AOGF" */;
+			buildConfigurationList = 377129CC1C1C703300169D1C /* Build configuration list for PBXProject "ObjSer" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -301,10 +305,10 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				377129D11C1C703300169D1C /* AOGF Mac */,
-				377129FD1C1C710900169D1C /* AOGF iOS */,
-				37712A2D1C1C778E00169D1C /* AOGFTests Mac */,
-				37712A4B1C1C77AF00169D1C /* AOGFTests iOS */,
+				377129D11C1C703300169D1C /* ObjSer Mac */,
+				377129FD1C1C710900169D1C /* ObjSer iOS */,
+				37712A2D1C1C778E00169D1C /* ObjSerTests Mac */,
+				37712A4B1C1C77AF00169D1C /* ObjSerTests iOS */,
 			);
 		};
 /* End PBXProject section */
@@ -345,17 +349,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				37712A101C1C747000169D1C /* AOGF.swift in Sources */,
-				37712A1C1C1C747700169D1C /* Extensions.swift in Sources */,
-				37712A141C1C747000169D1C /* Encoding.swift in Sources */,
+				37712A101C1C747000169D1C /* ObjSer.swift in Sources */,
+				37712A1C1C1C747700169D1C /* DictionaryInit.swift in Sources */,
+				37712A8C1C1D642000169D1C /* PairSequence.swift in Sources */,
+				37712A141C1C747000169D1C /* Conformance.swift in Sources */,
 				37712A1D1C1C747700169D1C /* IO.swift in Sources */,
-				37712A171C1C747000169D1C /* Unarchiver.swift in Sources */,
-				37712A161C1C747000169D1C /* Mapping.swift in Sources */,
+				37712A171C1C747000169D1C /* Deserialiser.swift in Sources */,
+				37712A161C1C747000169D1C /* Mappable.swift in Sources */,
 				37712A151C1C747000169D1C /* Format.swift in Sources */,
-				37712A131C1C747000169D1C /* Archiving.swift in Sources */,
-				37712A121C1C747000169D1C /* ArchiveType.swift in Sources */,
+				37712A131C1C747000169D1C /* Serialisable.swift in Sources */,
+				37712A121C1C747000169D1C /* Serialised.swift in Sources */,
 				37712A1E1C1C747700169D1C /* NumericType.swift in Sources */,
-				37712A111C1C747000169D1C /* Archiver.swift in Sources */,
+				37712A111C1C747000169D1C /* Serialiser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -363,17 +368,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				37712A1F1C1C74A300169D1C /* AOGF.swift in Sources */,
-				37712A271C1C74A300169D1C /* Extensions.swift in Sources */,
-				37712A231C1C74A300169D1C /* Encoding.swift in Sources */,
+				37712A1F1C1C74A300169D1C /* ObjSer.swift in Sources */,
+				37712A271C1C74A300169D1C /* DictionaryInit.swift in Sources */,
+				37712A8D1C1D643600169D1C /* PairSequence.swift in Sources */,
+				37712A231C1C74A300169D1C /* Conformance.swift in Sources */,
 				37712A281C1C74A300169D1C /* IO.swift in Sources */,
-				37712A261C1C74A300169D1C /* Unarchiver.swift in Sources */,
-				37712A251C1C74A300169D1C /* Mapping.swift in Sources */,
+				37712A261C1C74A300169D1C /* Deserialiser.swift in Sources */,
+				37712A251C1C74A300169D1C /* Mappable.swift in Sources */,
 				37712A241C1C74A300169D1C /* Format.swift in Sources */,
-				37712A221C1C74A300169D1C /* Archiving.swift in Sources */,
-				37712A211C1C74A300169D1C /* ArchiveType.swift in Sources */,
+				37712A221C1C74A300169D1C /* Serialisable.swift in Sources */,
+				37712A211C1C74A300169D1C /* Serialised.swift in Sources */,
 				37712A291C1C74A300169D1C /* NumericType.swift in Sources */,
-				37712A201C1C74A300169D1C /* Archiver.swift in Sources */,
+				37712A201C1C74A300169D1C /* Serialiser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -398,12 +404,12 @@
 /* Begin PBXTargetDependency section */
 		37712A351C1C778E00169D1C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 377129D11C1C703300169D1C /* AOGF Mac */;
+			target = 377129D11C1C703300169D1C /* ObjSer Mac */;
 			targetProxy = 37712A341C1C778E00169D1C /* PBXContainerItemProxy */;
 		};
 		37712A531C1C77AF00169D1C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 377129FD1C1C710900169D1C /* AOGF iOS */;
+			target = 377129FD1C1C710900169D1C /* ObjSer iOS */;
 			targetProxy = 37712A521C1C77AF00169D1C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -505,7 +511,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = "AOGF/Info-Mac.plist";
+				INFOPLIST_FILE = "ObjSer/Info-Mac.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -526,7 +532,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = "AOGF/Info-Mac.plist";
+				INFOPLIST_FILE = "ObjSer/Info-Mac.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -544,7 +550,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "AOGF/Info-iOS.plist";
+				INFOPLIST_FILE = "ObjSer/Info-iOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -564,7 +570,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "AOGF/Info-iOS.plist";
+				INFOPLIST_FILE = "ObjSer/Info-iOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -583,8 +589,8 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "Tests/Info-Mac.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.AOGFTests-Mac";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.ObjSerTests-Mac";
+				PRODUCT_NAME = "$(PROJECT_NAME)Tests-Mac";
 			};
 			name = Debug;
 		};
@@ -594,8 +600,8 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "Tests/Info-Mac.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.AOGFTests-Mac";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.ObjSerTests-Mac";
+				PRODUCT_NAME = "$(PROJECT_NAME)Tests-Mac";
 			};
 			name = Release;
 		};
@@ -606,8 +612,8 @@
 				INFOPLIST_FILE = "Tests/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.AOGFTests-iOS";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.ObjSerTests-iOS";
+				PRODUCT_NAME = "$(PROJECT_NAME)Tests-iOS";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -619,8 +625,8 @@
 				INFOPLIST_FILE = "Tests/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.AOGFTests-iOS";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.ObjSerTests-iOS";
+				PRODUCT_NAME = "$(PROJECT_NAME)Tests-iOS";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -629,7 +635,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		377129CC1C1C703300169D1C /* Build configuration list for PBXProject "AOGF" */ = {
+		377129CC1C1C703300169D1C /* Build configuration list for PBXProject "ObjSer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				377129E41C1C703300169D1C /* Debug */,
@@ -638,7 +644,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		377129E61C1C703300169D1C /* Build configuration list for PBXNativeTarget "AOGF Mac" */ = {
+		377129E61C1C703300169D1C /* Build configuration list for PBXNativeTarget "ObjSer Mac" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				377129E71C1C703300169D1C /* Debug */,
@@ -647,7 +653,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		37712A031C1C710900169D1C /* Build configuration list for PBXNativeTarget "AOGF iOS" */ = {
+		37712A031C1C710900169D1C /* Build configuration list for PBXNativeTarget "ObjSer iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				37712A041C1C710900169D1C /* Debug */,
@@ -656,7 +662,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		37712A361C1C778E00169D1C /* Build configuration list for PBXNativeTarget "AOGFTests Mac" */ = {
+		37712A361C1C778E00169D1C /* Build configuration list for PBXNativeTarget "ObjSerTests Mac" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				37712A371C1C778E00169D1C /* Debug */,
@@ -665,7 +671,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		37712A541C1C77AF00169D1C /* Build configuration list for PBXNativeTarget "AOGFTests iOS" */ = {
+		37712A541C1C77AF00169D1C /* Build configuration list for PBXNativeTarget "ObjSerTests iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				37712A551C1C77AF00169D1C /* Debug */,

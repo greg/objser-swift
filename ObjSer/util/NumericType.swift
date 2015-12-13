@@ -1,6 +1,6 @@
 //
 //  NumericType.swift
-//  AOGF
+//  ObjSer
 //
 //  The MIT License (MIT)
 //
@@ -25,7 +25,7 @@
 //  SOFTWARE.
 //
 
-import Foundation
+import CoreFoundation
 #if os(iOS)
 	import CoreGraphics
 #endif

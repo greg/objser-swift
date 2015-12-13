@@ -1,6 +1,6 @@
 //
-//  Archiving.swift
-//  AOGF
+//  PairSequence.swift
+//  ObjSer
 //
 //  The MIT License (MIT)
 //
@@ -25,16 +25,34 @@
 //  SOFTWARE.
 //
 
-/// The base protocol for types that can be archived.
-/// - Important: Types must conform to a subprotocol, `Encoding` or `Mapping`, as appropriate. Conforming only to this protocol will result in a runtime error.
-public protocol Archiving {
+struct PairSequenceGenerator<T>: GeneratorType {
+	
+	typealias Element = (T, T)
+	private var generator: AnyGenerator<T>
+	
+	mutating func next() -> (T, T)? {
+		guard let a = generator.next(), let b = generator.next() else { return nil }
+		return (a, b)
+	}
 	
 }
 
-/// Print an explanatory message and unconditionally stop execution.
-/// - Requires: `obj` does not conform to either `Encoding` or `Mapping`.
-@transparent @noreturn func archivingConformanceFailure(type: Archiving.Type) {
-	// don't confuse the user if the implementation is broken
-	assert(!(type is Encoding.Type || type is Mapping.Type), "Archiving conformance failure incorrectly raised for type \(type).")
-	preconditionFailure("Type \(type) conforms to Archiving, but not Encoding or Mapping.")
+struct PairSequence<Element>: SequenceType {
+	
+	private let sequence: AnySequence<Element>
+	
+	init<S : SequenceType where S.Generator.Element == Element>(_ seq: S) {
+		sequence = AnySequence(seq)
+	}
+	
+	typealias Generator = PairSequenceGenerator<Element>
+	
+	func generate() -> PairSequenceGenerator<Element> {
+		return PairSequenceGenerator(generator: sequence.generate())
+	}
+	
+	func underestimateCount() -> Int {
+		return sequence.underestimateCount() / 2
+	}
+	
 }

@@ -1,6 +1,6 @@
 //
-//  AOGF.swift
-//  AOGF
+//  Serialisable.swift
+//  ObjSer
 //
 //  The MIT License (MIT)
 //
@@ -25,19 +25,30 @@
 //  SOFTWARE.
 //
 
-public enum UnarchiveError: ErrorType {
+/// An object that can be serialised.
+public protocol Serialisable {
 	
-	case EmptyInput
-	case IncorrectType(ArchiveValue)
-	case ConversionFailed(Any)
-	case MapFailed(type: Mapping.Type, key: String)
+	/// Initialise an instance of `self` from the given serialised value.
+	/// - Remarks: This is a workaround for the impossibility of implementing initialisers as extensions on non-final classes.
+	/// - Note: If you are able to implement a required initialiser on your type, conform to `InitableEncoding` instead.
+	static func createFromSerialised(value: Serialised) throws -> Self
+	
+	var serialisedValue: Serialised { get }
 	
 }
 
-public func archive<T: Archiving>(rootObject: T, to stream: OutputStream) {
-	Archiver(encodeRootObject: rootObject).writeTo(stream)
+/// An object that can be serialised and is able to implement required initialisers.
+public protocol InitableSerialisable: Serialisable {
+	
+	/// Initialise from the given encoded value.
+	init(serialised value: Serialised) throws
+	
 }
 
-public func unarchive<T: Archiving>(stream: InputStream) throws -> T {
-	return try Unarchiver(readFromStream: stream).decodeRootObject()
+extension InitableSerialisable {
+	
+	@transparent public static func createFromSerialised(value: Serialised) throws -> Self {
+		return try Self.init(serialised: value)
+	}
+	
 }

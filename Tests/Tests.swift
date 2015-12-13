@@ -26,7 +26,7 @@
 //
 
 import XCTest
-@testable import AOGF
+@testable import ObjSer
 
 class Tests: XCTestCase {
     
@@ -42,27 +42,27 @@ class Tests: XCTestCase {
     
     func testTypeCoding() {
 		
-		let f = ArchiveType.Array([
-			ArchiveType.Integer(152352050802),
-			ArchiveType.String("aoeu"),
-			ArchiveType.Data([]),
-			ArchiveType.Float(3.14159265358979323846),
-			ArchiveType.Data([4, 255]),
-			ArchiveType.Map([]),
-			ArchiveType.Integer(-1),
-			ArchiveType.Array([]),
-			nil,
-			ArchiveType.Boolean(true),
-			ArchiveType.Array([
-				ArchiveType.String(""),
-				ArchiveType.Map([
-					ArchiveType.Integer(-7), ArchiveType.Boolean(false)
+		let f = Primitive.Array([
+			Primitive.Integer(152352050802),
+			Primitive.String("aoeu"),
+			Primitive.Data([]),
+			Primitive.Float(3.14159265358979323846),
+			Primitive.Data([4, 255]),
+			Primitive.Map([]),
+			Primitive.Integer(-1),
+			Primitive.Array([]),
+			Primitive.Nil,
+			Primitive.Boolean(true),
+			Primitive.Array([
+				Primitive.String(""),
+				Primitive.Map([
+					Primitive.Integer(-7), Primitive.Boolean(false)
 					])
 				])
 			])
 		
 		let o = OutputStream()
-		f.writeTo(o, resolver: { _ in nil })
+		f.writeTo(o)
 //		o.close()
 //		let data = o.propertyForKey(NSStreamDataWrittenToMemoryStreamKey) as! NSData
 //		print("data of size \(data.length): \(data)")
@@ -71,7 +71,7 @@ class Tests: XCTestCase {
 //		let i = NSInputStream(data: data)
 //		i.open()
 		let i = InputStream(bytes: data)
-		let g = try! ArchiveType(stream: i)
+		let g = try! Primitive(readFrom: i)
 //		i.close()
 //		
 		XCTAssertEqual(String(f), String(g))
@@ -79,14 +79,14 @@ class Tests: XCTestCase {
 //		let b = [215,68,113,97,117,97,195,184,101,117,113,98,66,113,99,207] as [UInt8]
 //		let ii = NSInputStream(data: NSData(bytes: b, length: b.count))
 //		ii.open()
-//		let h = try! ArchiveType(stream: ii)
+//		let h = try! Primitive(stream: ii)
 //		ii.close()
 //		print(h)
     }
 	
 	func testMapping() {
 		
-		struct S: Mapping {
+		struct S: Mappable {
 			var a: [String : Int]
 			var b: [Float]
 			var c: Bool
@@ -98,7 +98,7 @@ class Tests: XCTestCase {
 				return S(a: [:], b: [], c: false, d: nil, e: nil, f: nil)
 			}
 			
-			private mutating func archiveMap(mapper: Mapper) {
+			private mutating func mapWith(mapper: Mapper) {
 				mapper.map(&a, forKey: "a")
 				mapper.map(&b, forKey: "à very long name that will øverflow into vstring Å.")
 				mapper.map(&c, forKey: "ç")
@@ -112,11 +112,11 @@ class Tests: XCTestCase {
 		let a = S(a: ["aoeu": 5, "cgp": -1], b: [4.6, 7.9], c: true, d: nil, e: ["ao´u", nil, "Å"], f: nil)
 		
 		let o = OutputStream()
-		archive(a, to: o)
+		serialise(a, to: o)
 		
 		let i = InputStream(bytes: o.bytes)
 		do {
-			let b = try unarchive(i) as S
+			let b = try deserialise(i) as S
 			print("unarchived", b)
 			
 			XCTAssertEqual(String(a), String(b))

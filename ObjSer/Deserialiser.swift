@@ -1,6 +1,6 @@
 //
-//  Unarchiver.swift
-//  AOGF
+//  Deserialiser.swift
+//  ObjSer
 //
 //  The MIT License (MIT)
 //
@@ -25,62 +25,45 @@
 //  SOFTWARE.
 //
 
-import Foundation
-
-final class Unarchiver: Mapper {
+final class Deserialiser: Mapper {
 	
-	private var objects = ContiguousArray<ArchiveType>()
+	private var objects = ContiguousArray<Primitive>()
 	
 	// MARK: Initialisers
 	
-	init(readFromStream stream: InputStream) throws {
+	init(readFrom stream: InputStream) throws {
 		while stream.hasBytesAvailable {
-			objects.append(try ArchiveType(stream: stream))
+			objects.append(try Primitive(readFrom: stream))
 		}
 	}
 	
 	// MARK: Conversion
 	
-	func decodeRootObject<R : Archiving>() throws -> R {
-		guard let root = objects.last else { throw UnarchiveError.EmptyInput }
+	func deserialiseRoot<R : Serialisable>() throws -> R {
+		guard let root = objects.last else { throw DeserialiseError.EmptyInput }
 		return try decodeObject(root)
 	}
 	
-	/// An error that occured in the `map` function, to be thrown by `decodeObject` after `archiveMap` returns.
-	/// - Remarks: For API usage simplicity, the user-facing `map` and `archiveMap` functions are non-throwing, so any errors that prevent decoding from succeeding are thrown from `decodeObject`, returning to the caller of `unarchive`.
+	/// An error that occured in the `map` function, to be thrown by `decodeObject` after `mapWith` returns.
+	/// - Remarks: For API usage simplicity, the user-facing `map` and `mapWith` functions are non-throwing, so any errors that prevent decoding from succeeding are thrown from `decodeObject`, returning to the caller of `unarchive`.
 	/// - Remarks: This design may change in the future, if the possibility for the erroneous object to catch its mapping errors and allow mapping to continue demonstrates utility.
 	private var mapErrorToThrow: ErrorType?
 	
-	/// Unconstrained `decodeObject` implementation with runtime assertion of conformance to `Archiving`.
-	/// Used for decoding arrays and dictionaries whose conformance to Archiving can't be specialised.
-	/// - Requires: `_R : Archiving`. A runtime error will be raised otherwise.
-	private func unconstrainedDecodeObject<_R/** : Archiving */>(t: ArchiveType) throws -> _R {
-		guard let R = _R.self as? Archiving.Type else {
-			preconditionFailure("Could not decode object: \(_R.self) does not conform to Archiving.")
+	/// Unconstrained `decodeObject` implementation with runtime assertion of conformance to `Serialisable`.
+	/// Used for decoding arrays and dictionaries whose conformance to `Serialisable` can't be specialised.
+	/// - Requires: `_R : Serialisable`. A runtime error will be raised otherwise.
+	private func unconstrainedDecodeObject<_R/** : Serialisable */>(t: Primitive) throws -> _R {
+		guard let R = _R.self as? Serialisable.Type else {
+			preconditionFailure("Could not decode object: \(_R.self) does not conform to Serialisable.")
 		}
 		// Resolve references
 		if case .Reference(let i) = t {
 			return try unconstrainedDecodeObject(objects[Int(i)])
 		}
 		
-		if let T = R.self as? Encoding.Type {
-			var decoder = ItemDecoder(value: t, unarchiver: self)
-			defer { decoder.invalidate() }
-			if case .Array(let contents) = t {
-				decoder.contents = contents
-				return try T.createWithEncodedValue(ArchiveValue(arrayDecoder: decoder, valueDecoder: decoder)) as! _R
-			}
-			else if case .Map(let contents) = t {
-				decoder.contents = contents
-				return try T.createWithEncodedValue(ArchiveValue(mapDecoder: decoder, valueDecoder: decoder)) as! _R
-			}
-			else {
-				return try T.createWithEncodedValue(ArchiveValue(t, decoder: decoder)) as! _R
-			}
-		}
-		else if let T = R.self as? Mapping.Type {
+		if let T = R.self as? Mappable.Type {
 			guard case .Map(let contents) = t else {
-				throw UnarchiveError.IncorrectType(ArchiveValue(t))
+				throw DeserialiseError.IncorrectType(Serialised(t))
 			}
 			let map = Dictionary(sequence: try PairSequence(contents).lazy.map {
 				(try decodeObject($0.0) as String, $0.1)
@@ -90,7 +73,7 @@ final class Unarchiver: Mapper {
 			mappingObjects.append(T.self)
 			
 			var v = T.createForMapping()
-			v.archiveMap(self)
+			v.mapWith(self)
 			
 			maps.removeLast()
 			mappingObjects.removeLast()
@@ -104,11 +87,23 @@ final class Unarchiver: Mapper {
 			return v as! _R
 		}
 		else {
-			archivingConformanceFailure(R)
+			var decoder = ItemDecoder(value: t, unarchiver: self)
+			defer { decoder.invalidate() }
+			if case .Array(let contents) = t {
+				decoder.contents = contents
+				return try R.createFromSerialised(Serialised(arrayDecoder: decoder, valueDecoder: decoder)) as! _R
+			}
+			else if case .Map(let contents) = t {
+				decoder.contents = contents
+				return try R.createFromSerialised(Serialised(mapDecoder: decoder, valueDecoder: decoder)) as! _R
+			}
+			else {
+				return try R.createFromSerialised(Serialised(t, decoder: decoder)) as! _R
+			}
 		}
 	}
 	
-	private func decodeObject<R : Archiving>(t: ArchiveType) throws -> R {
+	private func decodeObject<R : Serialisable>(t: Primitive) throws -> R {
 		return try unconstrainedDecodeObject(t)
 	}
 	
@@ -116,17 +111,17 @@ final class Unarchiver: Mapper {
 	
 	private struct ItemDecoder: ArrayDecoder, MapDecoder, ValueDecoder {
 		
-		let value: ArchiveType
-		var contents: ArchiveTypeArray!
-		var unarchiver: Unarchiver!
+		let value: Primitive
+		var contents: ContiguousArray<Primitive>!
+		var unarchiver: Deserialiser!
 		mutating func invalidate() { unarchiver = nil }
 		
-		init(value: ArchiveType, unarchiver: Unarchiver) {
+		init(value: Primitive, unarchiver: Deserialiser) {
 			self.value = value
 			self.unarchiver = unarchiver
 		}
 		
-		private func decodeArray<R : Archiving>() throws -> AnySequence<R> {
+		private func decodeArray<R : Serialisable>() throws -> AnySequence<R> {
 			return AnySequence(try contents.lazy.map { try unarchiver.decodeObject($0) })
 		}
 		
@@ -134,7 +129,7 @@ final class Unarchiver: Mapper {
 			return AnySequence(try contents.lazy.map { try unarchiver.unconstrainedDecodeObject($0) })
 		}
 		
-		private func decodeMap<K : Archiving, V : Archiving>() throws -> AnySequence<(K, V)> {
+		private func decodeMap<K : Serialisable, V : Serialisable>() throws -> AnySequence<(K, V)> {
 			return try AnySequence(PairSequence(contents).lazy.map({
 				(try unarchiver.decodeObject($0.0), try unarchiver.decodeObject($0.1))
 			}))
@@ -146,7 +141,7 @@ final class Unarchiver: Mapper {
 			}))
 		}
 		
-		private func decodeValue<R : Archiving>() throws -> R {
+		private func decodeValue<R : Serialisable>() throws -> R {
 			return try unarchiver.decodeObject(value)
 		}
 		
@@ -158,12 +153,12 @@ final class Unarchiver: Mapper {
 	
 	// MARK: Mapper
 	
-	private var mappingObjects = ContiguousArray<Mapping.Type>()
-	private var maps = ContiguousArray<[String : ArchiveType]>()
+	private var mappingObjects = ContiguousArray<Mappable.Type>()
+	private var maps = ContiguousArray<[String : Primitive]>()
 	
-	func map<V : Archiving>(inout v: V, forKey key: String) {
+	func map<V : Serialisable>(inout v: V, forKey key: String) {
 		guard let t = maps.last![key] else {
-			mapErrorToThrow = UnarchiveError.MapFailed(type: mappingObjects.last!, key: key)
+			mapErrorToThrow = DeserialiseError.MapFailed(type: mappingObjects.last!, key: key)
 			return
 		}
 		do {

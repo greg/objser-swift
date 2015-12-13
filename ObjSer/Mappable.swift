@@ -1,6 +1,6 @@
 //
-//  IO.swift
-//  AOGF
+//  Mappable.swift
+//  ObjSer
 //
 //  The MIT License (MIT)
 //
@@ -25,43 +25,33 @@
 //  SOFTWARE.
 //
 
-import Foundation
+/// An object that can be serialised by mapping its properties for string keys.
+public protocol Mappable: Serialisable {
+	
+	/// Initialise an instance of `self`, ready for property mapping.
+	/// - Remarks: This is a workaround for the impossibility of implementing required initialisers as extensions on non-final classes.
+	static func createForMapping() -> Self
+	
+	/// Uses the provided mapper's `map` function to map its properties.
+	mutating func mapWith(mapper: Mapper)
+	
+}
 
-public class OutputStream {
+extension Mappable {
 	
-	var bytes = ByteArray()
-	
-	func write(bytes: ByteArray) {
-		self.bytes.appendContentsOf(bytes)
+	static func createFromSerialised(value: Serialised) throws -> Self {
+		fatalError()
 	}
 	
-	func write(bytes: Byte...) {
-		self.bytes.appendContentsOf(bytes)
+	var serialisedValue: Serialised {
+		fatalError()
 	}
 	
 }
 
-public class InputStream {
+public protocol Mapper {
 	
-	private let bytes: ByteArray
-	private var index: Int = 0
-	
-	var hasBytesAvailable: Bool {
-		return index < bytes.count
-	}
-	
-	init(bytes: ByteArray) {
-		self.bytes = bytes
-	}
-	
-	func readByte() -> Byte {
-		return bytes[index++]
-	}
-	
-	func readBytes(length length: Int) -> ArraySlice<Byte> {
-		let slice = bytes[index..<(index+length)]
-		index += length
-		return slice
-	}
+	/// Maps `v` for `key` in the current object.
+	func map<V : Serialisable>(inout v: V, forKey key: String)
 	
 }
