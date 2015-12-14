@@ -27,7 +27,9 @@
 
 public class OutputStream {
 	
-	var bytes = ByteArray()
+	public init() { }
+	
+	public private(set) var bytes = ByteArray()
 	
 	func write(bytes: ByteArray) {
 		self.bytes.appendContentsOf(bytes)
@@ -48,7 +50,7 @@ public class InputStream {
 		return index < bytes.count
 	}
 	
-	init(bytes: ByteArray) {
+	public init(bytes: ByteArray) {
 		self.bytes = bytes
 	}
 	
