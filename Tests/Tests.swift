@@ -113,8 +113,14 @@ class Tests: XCTestCase {
 		
 		let o = OutputStream()
 		serialise(a, to: o)
+//		print("bytes:", o.bytes.map { String($0, radix: 16) })
 		
 		let i = InputStream(bytes: o.bytes)
+//		var x = 0
+//		while i.hasBytesAvailable {
+//			print(x, try? Primitive(readFrom: i))
+//			x += 1
+//		}
 		do {
 			let b = try deserialise(i) as S
 			print("unarchived", b)

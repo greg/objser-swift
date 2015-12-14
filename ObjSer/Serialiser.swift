@@ -25,7 +25,7 @@
 //  SOFTWARE.
 //
 
-final class Serialiser: Mapper {
+final class Serialiser {
 	
 	// MARK: Initialisers
 	
@@ -40,61 +40,34 @@ final class Serialiser: Mapper {
 	
 	private var objects = ContiguousArray<Primitive!>()
 	private var objectIDs = [(UnsafePointer<Void>) : Int]()
+	private var stringIDs = [String : Int]()
 	
 	private func index(v: Serialisable) -> Int {
-		if let v = v as? Mappable {
-			// Only objects can cause cycles
-			if let o = v as? AnyObject {
-				let addr = unsafeAddressOf(o)
-				if let id = objectIDs[addr] {
-					return id
-				}
-				else {
-					objectIDs[addr] = objects.count
-				}
+		let newID = objects.count
+		// strings somehow magically conform to AnyObject, so handle them first separately.
+		if let s = v as? String {
+			if let id = stringIDs[s] {
+				return id
 			}
-			let id = objects.count
-			
-			// append a nil object first, since mapping will index more objects
-			objects.append(nil)
-			objects[id] = .Map(map(v))
-			
-			return id
+			stringIDs[s] = newID
 		}
-		else {
-			let ser = v.serialisedValue
-			switch ser.value {
-			case .Type(let t):
-				let id = objects.count
-				objects.append(t)
+		// temporary workaround, assumes that non-mappable objects can't cause cycles, which should usually be true.
+		// TODO: proper graph deduplication
+		else if v is Mappable, let o = v as? AnyObject {
+			// only objects can cause cycles
+			let addr = unsafeAddressOf(o)
+			if let id = objectIDs[addr] {
 				return id
-			case .EncodingArray(let s):
-				let id = objects.count
-				objects.append(nil)
-				var a = ContiguousArray<Primitive>()
-				a.reserveCapacity(s.underestimateCount())
-				for v in s {
-					a.append(indexAndPromise(v))
-				}
-				objects[id] = .Array(a)
-				return id
-			case .EncodingMap(let s):
-				let id = objects.count
-				objects.append(nil)
-				var a = ContiguousArray<Primitive>()
-				a.reserveCapacity(s.underestimateCount() * 2)
-				for (k, v) in s {
-					a.append(indexAndPromise(k))
-					a.append(indexAndPromise(v))
-				}
-				objects[id] = .Map(a)
-				return id
-			case .EncodingValue(let v):
-				return index(v)
-			default:
-				preconditionFailure("Could not index case \(ser.value).")
 			}
+			objectIDs[addr] = newID
 		}
+		
+		let ser = v.serialisingValue
+		objects.append(nil)
+		objects[newID] = ser.convertUsing({ serialisable in
+			self.indexAndPromise(serialisable)
+		})
+		return newID
 	}
 	
 	private func indexAndPromise(v: Serialisable) -> Primitive {
@@ -102,25 +75,6 @@ final class Serialiser: Mapper {
 		return .Promised({
 			return self.resolve(id)
 		})
-	}
-	
-	// MARK: Mapper
-	
-	private var maps = ContiguousArray<ContiguousArray<Primitive>>()
-	
-	func lastMapAppend(v: Primitive) {
-		maps[maps.count-1].append(v)
-	}
-	
-	private func map(var v: Mappable) -> ContiguousArray<Primitive> {
-		maps.append(ContiguousArray<Primitive>())
-		v.mapWith(self)
-		return maps.popLast()!
-	}
-	
-	func map<V : Serialisable>(inout v: V, forKey key: String) {
-		lastMapAppend(indexAndPromise(key))
-		lastMapAppend(indexAndPromise(v))
 	}
 	
 	// MARK: Output

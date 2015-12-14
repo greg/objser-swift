@@ -39,8 +39,8 @@ extension AnyInteger where Self: InitableSerialisable {
 		self = try value.integerValue()
 	}
 	
-	public var serialisedValue: Serialised {
-		return Serialised(integer: self)
+	public var serialisingValue: Serialising {
+		return Serialising(integer: self)
 	}
 	
 }
@@ -63,8 +63,8 @@ extension Bool: InitableSerialisable {
 		self = try value.booleanValue()
 	}
 	
-	public var serialisedValue: Serialised {
-		return Serialised(boolean: self)
+	public var serialisingValue: Serialising {
+		return Serialising(boolean: self)
 	}
 	
 }
@@ -76,8 +76,8 @@ extension AnyFloat where Self: InitableSerialisable {
 		self = try value.floatValue()
 	}
 	
-	public var serialisedValue: Serialised {
-		return Serialised(float: self)
+	public var serialisingValue: Serialising {
+		return Serialising(float: self)
 	}
 	
 }
@@ -93,8 +93,8 @@ extension String: InitableSerialisable {
 		self = try value.stringValue()
 	}
 	
-	public var serialisedValue: Serialised {
-		return Serialised(string: self)
+	public var serialisingValue: Serialising {
+		return Serialising(string: self)
 	}
 	
 }
@@ -109,12 +109,12 @@ extension NSData: Serialisable {
 		}
 	}
 	
-	public var serialisedValue: Serialised {
+	public var serialisingValue: Serialising {
 		var bytes = ByteArray(count: length, repeatedValue: 0)
 		bytes.withUnsafeMutableBufferPointer { (inout buf: UnsafeMutableBufferPointer<Byte>) in
 			self.getBytes(buf.baseAddress, length: length)
 		}
-		return Serialised(data: bytes)
+		return Serialising(data: bytes)
 	}
 	
 }
@@ -126,9 +126,9 @@ extension Array: InitableSerialisable {
 		self = Array(try value.unconstrainedArrayValue())
 	}
 	
-	public var serialisedValue: Serialised {
+	public var serialisingValue: Serialising {
 		precondition(Element.self is Serialisable.Type, "Array element type \(Element.self) does not conform to Serialisable.")
-		return Serialised(array: self.lazy.map { $0 as! Serialisable })
+		return Serialising(array: self.lazy.map { $0 as! Serialisable })
 	}
 	
 }
@@ -141,10 +141,10 @@ extension Dictionary: InitableSerialisable {
 		self = Dictionary(sequence: try value.unconstrainedMapValue())
 	}
 	
-	public var serialisedValue: Serialised {
+	public var serialisingValue: Serialising {
 		precondition(Key.self is Serialisable.Type, "Dictionary key type \(Key.self) does not conform to Serialisable.")
 		precondition(Value.self is Serialisable.Type, "Dictionary value type \(Value.self) does not conform to Serialisable.")
-		return Serialised(map: self.lazy.map { ($0.0 as! Serialisable, $0.1 as! Serialisable) })
+		return Serialising(map: self.lazy.map { ($0.0 as! Serialisable, $0.1 as! Serialisable) })
 	}
 	
 }
@@ -162,10 +162,10 @@ extension Optional: InitableSerialisable {
 		}
 	}
 	
-	public var serialisedValue: Serialised {
+	public var serialisingValue: Serialising {
 		precondition(Wrapped.self is Serialisable.Type, "Wrapped type \(Wrapped.self) does not conform to Serialisable.")
 		if let w = self {
-			return Serialised(archivingValue: w as! Serialisable)
+			return Serialising(serialising: w as! Serialisable)
 		}
 		return nil
 	}
@@ -178,8 +178,8 @@ extension ImplicitlyUnwrappedOptional: InitableSerialisable {
 		self = try Optional<Wrapped>(serialised: value)
 	}
 	
-	public var serialisedValue: Serialised {
-		return (self as Optional<Wrapped>).serialisedValue
+	public var serialisingValue: Serialising {
+		return (self as Optional<Wrapped>).serialisingValue
 	}
 	
 }

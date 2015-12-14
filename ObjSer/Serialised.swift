@@ -47,6 +47,7 @@ protocol ValueDecoder {
 }
 
 // Public wrapper around `Primitive`
+@available(*, deprecated=0)
 public struct Serialised: NilLiteralConvertible {
 	
 	enum Value {
@@ -190,6 +191,82 @@ public struct Serialised: NilLiteralConvertible {
 	/// - Requires: `_R : Serialisable`. A runtime error will be thrown otherwise.
 	public func unconstrainedArchivingValue<_R>() throws -> _R {
 		return try valueDecoder.unconstrainedDecodeValue()
+	}
+	
+}
+
+protocol PrimitiveConverter {
+	
+	func primitiveValue(v: Serialisable) -> Primitive
+	
+}
+
+public struct Serialising: NilLiteralConvertible {
+	
+	private enum State {
+		case Converted(Primitive)
+		case Convertible((Serialisable -> Primitive) -> Primitive)
+	}
+	private let state: State
+	
+	public init<T : AnyInteger>(integer: T) {
+		state = .Converted(.Integer(integer))
+	}
+	
+	public init(nilLiteral: ()) {
+		state = .Converted(.Nil)
+	}
+	
+	public init(boolean: Bool) {
+		state = .Converted(.Boolean(boolean))
+	}
+	
+	public init<T : AnyFloat>(float: T) {
+		state = .Converted(.Float(float))
+	}
+	
+	public init(string: String) {
+		state = .Converted(.String(string))
+	}
+	
+	public init<S : SequenceType where S.Generator.Element == Byte>(data bytes: S) {
+		state = .Converted(.Data(ByteArray(bytes)))
+	}
+	
+	public init<S : SequenceType where S.Generator.Element == Serialisable>(array seq: S) {
+		state = .Convertible({ serialise in
+			var a = ContiguousArray<Primitive>()
+			a.reserveCapacity(seq.underestimateCount())
+			for serialisable in seq {
+				a.append(serialise(serialisable))
+			}
+			return .Array(a)
+		})
+	}
+	
+	public init<S : SequenceType where S.Generator.Element == (Serialisable, Serialisable)>(map seq: S) {
+		state = .Convertible({ serialise in
+			var a = ContiguousArray<Primitive>()
+			a.reserveCapacity(seq.underestimateCount() * 2)
+			for (serialisableKey, serialisableVal) in seq {
+				a.append(serialise(serialisableKey))
+				a.append(serialise(serialisableVal))
+			}
+			return .Map(a)
+		})
+	}
+	
+	public init(serialising value: Serialisable) {
+		state = .Convertible({ serialise in
+			serialise(value)
+		})
+	}
+	
+	func convertUsing(serialiser: Serialisable -> Primitive) -> Primitive {
+		switch state {
+		case .Converted(let p): return p
+		case .Convertible(let conv): return conv(serialiser)
+		}
 	}
 	
 }

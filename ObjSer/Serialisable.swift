@@ -33,7 +33,7 @@ public protocol Serialisable {
 	/// - Note: If you are able to implement a required initialiser on your type, conform to `InitableEncoding` instead.
 	static func createFromSerialised(value: Serialised) throws -> Self
 	
-	var serialisedValue: Serialised { get }
+	var serialisingValue: Serialising { get }
 	
 }
 

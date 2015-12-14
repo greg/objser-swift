@@ -37,21 +37,38 @@ public protocol Mappable: Serialisable {
 	
 }
 
-extension Mappable {
-	
-	static func createFromSerialised(value: Serialised) throws -> Self {
-		fatalError()
-	}
-	
-	var serialisedValue: Serialised {
-		fatalError()
-	}
-	
-}
-
 public protocol Mapper {
 	
 	/// Maps `v` for `key` in the current object.
 	func map<V : Serialisable>(inout v: V, forKey key: String)
 	
 }
+
+extension Mappable {
+	
+	static func createFromSerialised(value: Serialised) throws -> Self {
+		fatalError()
+	}
+	
+	var serialisingValue: Serialising {
+		return Serialising(map: SerialisingMapper().map(self))
+	}
+	
+}
+
+private class SerialisingMapper: Mapper {
+	
+	private var map: ContiguousArray<(Serialisable, Serialisable)>!
+	
+	private func map(var v: Mappable) -> ContiguousArray<(Serialisable, Serialisable)> {
+		map = []
+		v.mapWith(self)
+		return map
+	}
+	
+	func map<V : Serialisable>(inout v: V, forKey key: String) {
+		map.append((key, v))
+	}
+	
+}
+		
