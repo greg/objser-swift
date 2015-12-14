@@ -36,6 +36,7 @@
 		37712A8C1C1D642000169D1C /* PairSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A8B1C1D642000169D1C /* PairSequence.swift */; };
 		37712A8D1C1D643600169D1C /* PairSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A8B1C1D642000169D1C /* PairSequence.swift */; };
 		37C20DE61C1EE04F006DB788 /* Primitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37C20DE51C1EE04F006DB788 /* Primitive.swift */; };
+		37C20DE71C1F21AD006DB788 /* Primitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37C20DE51C1EE04F006DB788 /* Primitive.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -374,6 +375,7 @@
 				37712A281C1C74A300169D1C /* IO.swift in Sources */,
 				37712A261C1C74A300169D1C /* Deserialiser.swift in Sources */,
 				37712A251C1C74A300169D1C /* Mappable.swift in Sources */,
+				37C20DE71C1F21AD006DB788 /* Primitive.swift in Sources */,
 				37712A241C1C74A300169D1C /* Format.swift in Sources */,
 				37712A221C1C74A300169D1C /* Serialisable.swift in Sources */,
 				37712A291C1C74A300169D1C /* NumericType.swift in Sources */,

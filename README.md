@@ -1,8 +1,8 @@
-# Object Graph Serialisation (ObjSer) for Swift
+# Object Graph Serialisation (ObjSer) for Swift [![GitHub release](https://img.shields.io/github/release/partiallyfinite/objser-swift.svg)](https://github.com/PartiallyFinite/objser-swift/releases) [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
 ObjSer reference implementation in Swift.
 
-*Note: Though this library currently complies with the ObjSer specification and is mostly functional, it is not recommended for production use as it is largely untested, and the API is subject to breaking changes.*
+*Note: Though this library currently complies with the ObjSer specification, it is in alpha stages and is not recommended for production use as it is largely untested, and the API is subject to breaking changes.*
 
 ## Features
 
