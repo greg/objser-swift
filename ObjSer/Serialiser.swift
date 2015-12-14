@@ -44,16 +44,16 @@ final class Serialiser {
 	
 	private func index(v: Serialisable) -> Int {
 		let newID = objects.count
-		// strings somehow magically conform to AnyObject, so handle them first separately.
+		// TODO: complete graph deduplication, including value types
+		// deduplicate strings
 		if let s = v as? String {
 			if let id = stringIDs[s] {
 				return id
 			}
 			stringIDs[s] = newID
 		}
-		// temporary workaround, assumes that non-mappable objects can't cause cycles, which should usually be true.
-		// TODO: proper graph deduplication
-		else if v is Mappable, let o = v as? AnyObject {
+		// check that the dynamic type is a class to exclude automagically bridged types like String, Int and Float/Double.
+		else if v.dynamicType is AnyClass, let o = v as? AnyObject {
 			// only objects can cause cycles
 			let addr = unsafeAddressOf(o)
 			if let id = objectIDs[addr] {
