@@ -28,7 +28,7 @@
 public enum DeserialiseError: ErrorType {
 	
 	case EmptyInput
-	case IncorrectType(Serialised)
+	case IncorrectType(Any)
 	case ConversionFailed(Any)
 	case MapFailed(type: Mappable.Type, key: String)
 	

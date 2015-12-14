@@ -25,7 +25,7 @@
 //  SOFTWARE.
 //
 
-final class Deserialiser: Mapper {
+final class Deserialiser: PrimitiveDeserialiser {
 	
 	private var objects = ContiguousArray<Primitive>()
 	
@@ -41,132 +41,26 @@ final class Deserialiser: Mapper {
 	
 	func deserialiseRoot<R : Serialisable>() throws -> R {
 		guard let root = objects.last else { throw DeserialiseError.EmptyInput }
-		return try decodeObject(root)
+		return try deserialise(root)
 	}
 	
-	/// An error that occured in the `map` function, to be thrown by `decodeObject` after `mapWith` returns.
-	/// - Remarks: For API usage simplicity, the user-facing `map` and `mapWith` functions are non-throwing, so any errors that prevent decoding from succeeding are thrown from `decodeObject`, returning to the caller of `unarchive`.
-	/// - Remarks: This design may change in the future, if the possibility for the erroneous object to catch its mapping errors and allow mapping to continue demonstrates utility.
-	private var mapErrorToThrow: ErrorType?
-	
-	/// Unconstrained `decodeObject` implementation with runtime assertion of conformance to `Serialisable`.
+	/// Unconstrained `deserialise` implementation.
 	/// Used for decoding arrays and dictionaries whose conformance to `Serialisable` can't be specialised.
 	/// - Requires: `_R : Serialisable`. A runtime error will be raised otherwise.
-	private func unconstrainedDecodeObject<_R/** : Serialisable */>(t: Primitive) throws -> _R {
+	func unconstrainedDeserialise<_R>(primitive: Primitive) throws -> _R {
 		guard let R = _R.self as? Serialisable.Type else {
 			preconditionFailure("Could not decode object: \(_R.self) does not conform to Serialisable.")
 		}
 		// Resolve references
-		if case .Reference(let i) = t {
-			return try unconstrainedDecodeObject(objects[Int(i)])
+		if case .Reference(let i) = primitive {
+			return try unconstrainedDeserialise(objects[Int(i)])
 		}
 		
-		if let T = R.self as? Mappable.Type {
-			guard case .Map(let contents) = t else {
-				throw DeserialiseError.IncorrectType(Serialised(t))
-			}
-			let map = Dictionary(sequence: try PairSequence(contents).lazy.map {
-				(try decodeObject($0.0) as String, $0.1)
-				})
-			
-			maps.append(map)
-			mappingObjects.append(T.self)
-			
-			var v = T.createForMapping()
-			v.mapWith(self)
-			
-			maps.removeLast()
-			mappingObjects.removeLast()
-			
-			// throw any errors that occured in the map function here.
-			if let error = mapErrorToThrow {
-				mapErrorToThrow = nil
-				throw error
-			}
-			
-			return v as! _R
-		}
-		else {
-			var decoder = ItemDecoder(value: t, unarchiver: self)
-			defer { decoder.invalidate() }
-			if case .Array(let contents) = t {
-				decoder.contents = contents
-				return try R.createFromSerialised(Serialised(arrayDecoder: decoder, valueDecoder: decoder)) as! _R
-			}
-			else if case .Map(let contents) = t {
-				decoder.contents = contents
-				return try R.createFromSerialised(Serialised(mapDecoder: decoder, valueDecoder: decoder)) as! _R
-			}
-			else {
-				return try R.createFromSerialised(Serialised(t, decoder: decoder)) as! _R
-			}
-		}
+		return try R.createByDeserialising(Deserialising(primitive: primitive, deserialiser: self)) as! _R
 	}
 	
-	private func decodeObject<R : Serialisable>(t: Primitive) throws -> R {
-		return try unconstrainedDecodeObject(t)
-	}
-	
-	// MARK: Array & Map decoding
-	
-	private struct ItemDecoder: ArrayDecoder, MapDecoder, ValueDecoder {
-		
-		let value: Primitive
-		var contents: ContiguousArray<Primitive>!
-		var unarchiver: Deserialiser!
-		mutating func invalidate() { unarchiver = nil }
-		
-		init(value: Primitive, unarchiver: Deserialiser) {
-			self.value = value
-			self.unarchiver = unarchiver
-		}
-		
-		private func decodeArray<R : Serialisable>() throws -> AnySequence<R> {
-			return AnySequence(try contents.lazy.map { try unarchiver.decodeObject($0) })
-		}
-		
-		private func unconstrainedDecodeArray<_R>() throws -> AnySequence<_R> {
-			return AnySequence(try contents.lazy.map { try unarchiver.unconstrainedDecodeObject($0) })
-		}
-		
-		private func decodeMap<K : Serialisable, V : Serialisable>() throws -> AnySequence<(K, V)> {
-			return try AnySequence(PairSequence(contents).lazy.map({
-				(try unarchiver.decodeObject($0.0), try unarchiver.decodeObject($0.1))
-			}))
-		}
-		
-		private func unconstrainedDecodeMap<_K, _V>() throws -> AnySequence<(_K, _V)> {
-			return try AnySequence(PairSequence(contents).lazy.map({
-				(try unarchiver.unconstrainedDecodeObject($0.0), try unarchiver.unconstrainedDecodeObject($0.1))
-			}))
-		}
-		
-		private func decodeValue<R : Serialisable>() throws -> R {
-			return try unarchiver.decodeObject(value)
-		}
-		
-		private func unconstrainedDecodeValue<_R>() throws -> _R {
-			return try unarchiver.unconstrainedDecodeObject(value)
-		}
-		
-	}
-	
-	// MARK: Mapper
-	
-	private var mappingObjects = ContiguousArray<Mappable.Type>()
-	private var maps = ContiguousArray<[String : Primitive]>()
-	
-	func map<V : Serialisable>(inout v: V, forKey key: String) {
-		guard let t = maps.last![key] else {
-			mapErrorToThrow = DeserialiseError.MapFailed(type: mappingObjects.last!, key: key)
-			return
-		}
-		do {
-			v = try decodeObject(t)
-		}
-		catch {
-			mapErrorToThrow = error
-		}
+	func deserialise<R : Serialisable>(primitive: Primitive) throws -> R {
+		return try unconstrainedDeserialise(primitive)
 	}
 	
 }

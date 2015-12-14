@@ -109,7 +109,7 @@ class Tests: XCTestCase {
 		}
 		
 		
-		let a = S(a: ["aoeu": 5, "cgp": -1], b: [4.6, 7.9], c: true, d: nil, e: ["ao´u", nil, "Å"], f: nil)
+		let a = S(a: ["aoeu": 5, "cgp": -1], b: [4.6, 7.9], c: true, d: nil, e: ["ao´u", nil, "Å"], f: false)
 		
 		let o = OutputStream()
 		serialise(a, to: o)

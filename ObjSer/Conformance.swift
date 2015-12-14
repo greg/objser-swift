@@ -35,7 +35,7 @@
 
 extension AnyInteger where Self: InitableSerialisable {
 	
-	public init(serialised value: Serialised) throws {
+	public init(deserialising value: Deserialising) throws {
 		self = try value.integerValue()
 	}
 	
@@ -59,7 +59,7 @@ extension UInt: InitableSerialisable { }
 
 extension Bool: InitableSerialisable {
 
-	public init(serialised value: Serialised) throws {
+	public init(deserialising value: Deserialising) throws {
 		self = try value.booleanValue()
 	}
 	
@@ -72,7 +72,7 @@ extension Bool: InitableSerialisable {
 
 extension AnyFloat where Self: InitableSerialisable {
 	
-	public init(serialised value: Serialised) throws {
+	public init(deserialising value: Deserialising) throws {
 		self = try value.floatValue()
 	}
 	
@@ -89,7 +89,7 @@ extension CGFloat: InitableSerialisable { }
 
 extension String: InitableSerialisable {
 	
-	public init(serialised value: Serialised) throws {
+	public init(deserialising value: Deserialising) throws {
 		self = try value.stringValue()
 	}
 	
@@ -102,7 +102,7 @@ extension String: InitableSerialisable {
 
 extension NSData: Serialisable {
 	
-	public static func createFromSerialised(value: Serialised) throws -> Self {
+	public static func createByDeserialising(value: Deserialising) throws -> Self {
 		let bytes = try value.dataValue()
 		return bytes.withUnsafeBufferPointer { buf in
 			return self.init(bytes: buf.baseAddress, length: bytes.count)
@@ -121,7 +121,7 @@ extension NSData: Serialisable {
 
 extension Array: InitableSerialisable {
 	
-	public init(serialised value: Serialised) throws {
+	public init(deserialising value: Deserialising) throws {
 		precondition(Element.self is Serialisable.Type, "Array element type \(Element.self) does not conform to Serialisable.")
 		self = Array(try value.unconstrainedArrayValue())
 	}
@@ -135,7 +135,7 @@ extension Array: InitableSerialisable {
 
 extension Dictionary: InitableSerialisable {
 	
-	public init(serialised value: Serialised) throws {
+	public init(deserialising value: Deserialising) throws {
 		precondition(Key.self is Serialisable.Type, "Dictionary key type \(Key.self) does not conform to Serialisable.")
 		precondition(Value.self is Serialisable.Type, "Dictionary value type \(Value.self) does not conform to Serialisable.")
 		self = Dictionary(sequence: try value.unconstrainedMapValue())
@@ -151,14 +151,16 @@ extension Dictionary: InitableSerialisable {
 
 extension Optional: InitableSerialisable {
 	
-	public init(serialised value: Serialised) throws {
-		precondition(Wrapped.self is Serialisable.Type, "Wrapped type \(Wrapped.self) does not conform to Serialisable.")
+	public init(deserialising value: Deserialising) throws {
+		guard let W = Wrapped.self as? Serialisable.Type else {
+			preconditionFailure("Wrapped type \(Wrapped.self) does not conform to Serialisable.")
+		}
 		do {
 			try value.nilValue()
 			self = nil
 		}
 		catch {
-			self = try value.unconstrainedArchivingValue() as Wrapped
+			self = (try W.createByDeserialising(value) as! Wrapped)
 		}
 	}
 	
@@ -174,8 +176,8 @@ extension Optional: InitableSerialisable {
 
 extension ImplicitlyUnwrappedOptional: InitableSerialisable {
 	
-	public init(serialised value: Serialised) throws {
-		self = try Optional<Wrapped>(serialised: value)
+	public init(deserialising value: Deserialising) throws {
+		self = try Optional<Wrapped>(deserialising: value)
 	}
 	
 	public var serialisingValue: Serialising {

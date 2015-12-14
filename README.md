@@ -44,7 +44,7 @@ To make a type serialisable, add conformance to the `Serialisable` or `Mappable`
 
 #### `Serialisable`
 
-The `Serialisable` protocol is intended for encoding primitive types: integers, strings, arrays, dictionaries, etc. A conforming object must be able to initialise from a `Serialised` value, and produce one representing itself when requested.
+The `Serialisable` protocol is intended for encoding primitive types: integers, strings, arrays, dictionaries, etc. A conforming object must be able to initialise from a `Deserialising` value, and produce a `Serialising` value representing itself when requested.
 
 Conformance extensions for most standard library types are provided, so using this protocol is rarely necessary.
 
@@ -53,19 +53,19 @@ If you are extending a non-final class out of your control, e.g. `NSData`, and a
 ```swift
 extension NSData: Serialisable {
 	
-	public static func createFromSerialised(value: Serialised) throws -> Self {
+	public static func createByDeserialising(value: Deserialising) throws -> Self {
 		let bytes = try value.dataValue()
 		return bytes.withUnsafeBufferPointer { buf in
 			return self.init(bytes: buf.baseAddress, length: bytes.count)
 		}
 	}
 	
-	public var serialisedValue: Serialised {
+	public var serialisingValue: Serialising {
 		var bytes = ByteArray(count: length, repeatedValue: 0)
 		bytes.withUnsafeMutableBufferPointer { (inout buf: UnsafeMutableBufferPointer<Byte>) in
 			self.getBytes(buf.baseAddress, length: length)
 		}
-		return Serialised(data: bytes)
+		return Serialising(data: bytes)
 	}
 	
 }
@@ -76,12 +76,12 @@ If you are able to implement required initialisers in a class, and it is more co
 ```swift
 extension Bool: InitableSerialisable {
 
-	public init(serialised value: Serialised) throws {
+	public init(deserialising value: Deserialising) throws {
 		self = try value.booleanValue()
 	}
 	
-	public var serialisedValue: Serialised {
-		return Serialised(boolean: self)
+	public var serialisingValue: Serialising {
+		return Serialising(boolean: self)
 	}
 	
 }
@@ -89,7 +89,7 @@ extension Bool: InitableSerialisable {
 
 See [Conformance.swift](ObjSer/Conformance.swift) for further examples.
 
-**Note:** Do not catch errors thrown by `Serialised`'s accessor functions, unless you intend to try a different primitive value if one does not work. If initialisation fails, rethrow a caught error, or throw a new one.
+**Note:** Do not catch errors thrown by `Deserialising`'s accessor functions, unless you intend to try a different primitive value if one does not work. If initialisation fails, rethrow a caught error, or throw a new one.
 
 #### `Mappable`
 
@@ -120,11 +120,17 @@ It is not currently possible to correctly deserialise collections of non-concret
 
 ## Implementation notes
 
-Due to the inability to add constrained protocol inheritance (`extension Array: Serialisable where Element : Serialisable`) in Swift 2.1, extensions to `Array`, `Dictionary`, `Optional`, and `ImplicitlyUnwrappedOptional` mark the entire type as conforming, and raise runtime errors if a non-conforming type is contained within.
+-	The errors thrown by various functions are currently largely undocumented, and their associated objects are not very useful for determining the cause of an error. These will be significantly changed, and should not be depended on (use `try?` on throwing functions instead trying to make sense of a caught error).
 
-An unfortunate side effect of this is the lack of compile-time errors when archiving or mapping an array, dictionary, or optional containing value(s) that do not conform to `Serialisable`. This is eased somewhat by descriptive runtime error messages that provide sufficient type information to locate and correct non-conforming types.
+-	Serialisable types that are not `Mappable` should not introduce cycles into the object graph, due to a workaround used by `Serialiser` that will be fixed soon.
 
-The alternative to this approach would be to provide a large number of boilerplate methods in the serialiser and deserialiser to handle various permutations of nested arrays, dictionaries, optionals, etc., which would provide compile-time type-checking at the expense of API simplicity, code size, and the inevitable lack of support for an obscure edge case.
+-	The current `InputStream` and `OutputStream` structs are temporary; a better IO API will be added in the future.
 
-In future, it will hopefully be possible to amend this as complete generics are added to [Swift 3.0](https://github.com/apple/swift-evolution).
+-	Due to the inability to add constrained protocol inheritance (`extension Array: Serialisable where Element : Serialisable`) in Swift 2.1, extensions to `Array`, `Dictionary`, `Optional`, and `ImplicitlyUnwrappedOptional` mark the entire type as conforming, and raise runtime errors if a non-conforming type is contained within.
+
+	An unfortunate side effect of this is the lack of compile-time errors when archiving or mapping an array, dictionary, or optional containing value(s) that do not conform to `Serialisable`. This is eased somewhat by descriptive runtime error messages that provide sufficient type information to locate and correct non-conforming types.
+
+	The alternative to this approach would be to provide a large number of boilerplate methods in the serialiser and deserialiser to handle various permutations of nested arrays, dictionaries, optionals, etc., which would provide compile-time type-checking at the expense of API simplicity, code size, and the inevitable lack of support for an obscure edge case.
+
+	In future, it will hopefully be possible to amend this as complete generics are added to [Swift 3.0](https://github.com/apple/swift-evolution).
 

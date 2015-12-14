@@ -46,8 +46,10 @@ public protocol Mapper {
 
 extension Mappable {
 	
-	static func createFromSerialised(value: Serialised) throws -> Self {
-		fatalError()
+	static func createByDeserialising(value: Deserialising) throws -> Self {
+		var v = Self.createForMapping()
+		try DeserialisingMapper(deserialising: value).map(&v)
+		return v
 	}
 	
 	var serialisingValue: Serialising {
@@ -56,7 +58,7 @@ extension Mappable {
 	
 }
 
-private class SerialisingMapper: Mapper {
+private final class SerialisingMapper: Mapper {
 	
 	private var map: ContiguousArray<(Serialisable, Serialisable)>!
 	
@@ -68,6 +70,52 @@ private class SerialisingMapper: Mapper {
 	
 	func map<V : Serialisable>(inout v: V, forKey key: String) {
 		map.append((key, v))
+	}
+	
+}
+
+private final class DeserialisingMapper: Mapper {
+	
+	private let map: [String : Primitive]
+	private let deserialiser: PrimitiveDeserialiser!
+	
+	private init(deserialising value: Deserialising) throws {
+		do {
+			let (map, deserialiser) = try value.stringKeyedPrimitiveMapValue()
+			self.deserialiser = deserialiser
+			self.map = Dictionary(sequence: map)
+		}
+		catch {
+			// All stored properties of a class instance must be initialized before throwing from an initializer
+			self.deserialiser = nil
+			self.map = [:]
+			throw error
+		}
+	}
+	
+	/// An error that occured in the `map` function, to be thrown after `mapWith` returns.
+	/// - Remarks: For API usage simplicity, the user-facing `map` and `mapWith` functions are non-throwing, so any errors that prevent decoding from succeeding return to the caller of `deserialise`.
+	/// - Remarks: This design may change in the future, if the possibility for the erroneous object to catch its mapping errors and allow mapping to continue demonstrates utility.
+	private var mapErrorToThrow: ErrorType?
+	
+	private var mappingType: Mappable.Type!
+	
+	private func map<T : Mappable>(inout v: T) throws {
+		mappingType = T.self
+		v.mapWith(self)
+	}
+	
+	func map<V : Serialisable>(inout v: V, forKey key: String) {
+		guard let primitive = map[key] else {
+			mapErrorToThrow = DeserialiseError.MapFailed(type: mappingType, key: key)
+			return
+		}
+		do {
+			v = try deserialiser.deserialise(primitive)
+		}
+		catch {
+			mapErrorToThrow = error
+		}
 	}
 	
 }
