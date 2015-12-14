@@ -24,7 +24,7 @@ let rootObject: [CGPoint] = ...
 // create an output stream (this API will change in the future)
 let stream = OutputStream()
 // serialise the object to the output stream
-serialise(rootObject, to: stream)
+Serialiser.serialiseRoot(rootObject, to: stream)
 // get the resulting byte array
 let bytes = stream.bytes
 ```
@@ -35,7 +35,7 @@ let bytes = stream.bytes
 // create an input stream (this API will change in the future)
 let stream = InputStream(bytes: bytes)
 // provide the deserialiser with necessary type information by specifying the root object's type
-let rootObject = try? deserialise(stream) as [CGPoint]
+let rootObject = try? Deserialiser.deserialiseFrom(stream) as [CGPoint]
 ```
 
 ### Custom types

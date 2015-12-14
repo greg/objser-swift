@@ -33,11 +33,3 @@ public enum DeserialiseError: ErrorType {
 	case MapFailed(type: Mappable.Type, key: String)
 	
 }
-
-public func serialise<T: Serialisable>(rootObject: T, to stream: OutputStream) {
-	Serialiser(serialiseRoot: rootObject).writeTo(stream)
-}
-
-public func deserialise<T: Serialisable>(stream: InputStream) throws -> T {
-	return try Deserialiser(readFrom: stream).deserialiseRoot()
-}

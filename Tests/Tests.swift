@@ -112,7 +112,7 @@ class Tests: XCTestCase {
 		let a = S(a: ["aoeu": 5, "cgp": -1], b: [4.6, 7.9], c: true, d: nil, e: ["ao´u", nil, "Å"], f: false)
 		
 		let o = OutputStream()
-		serialise(a, to: o)
+		Serialiser.serialiseRoot(a, to: o)
 //		print("bytes:", o.bytes.map { String($0, radix: 16) })
 		
 		let i = InputStream(bytes: o.bytes)
@@ -122,7 +122,7 @@ class Tests: XCTestCase {
 //			x += 1
 //		}
 		do {
-			let b = try deserialise(i) as S
+			let b = try Deserialiser.deserialiseFrom(i) as S
 			print("unarchived", b)
 			
 			XCTAssertEqual(String(a), String(b))

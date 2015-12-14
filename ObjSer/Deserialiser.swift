@@ -25,13 +25,17 @@
 //  SOFTWARE.
 //
 
-final class Deserialiser: PrimitiveDeserialiser {
+public final class Deserialiser {
+	
+	public class func deserialiseFrom<R : Serialisable>(stream: InputStream) throws -> R {
+		let des = try self.init(readFrom: stream)
+		return try des.deserialiseRoot()
+	}
 	
 	private var objects = ContiguousArray<Primitive>()
 	
-	// MARK: Initialisers
-	
-	init(readFrom stream: InputStream) throws {
+	private init(readFrom stream: InputStream) throws {
+		forwarder = PrimitiveDeserialiserForwarder(deserialiser: self)
 		while stream.hasBytesAvailable {
 			objects.append(try Primitive(readFrom: stream))
 		}
@@ -39,7 +43,7 @@ final class Deserialiser: PrimitiveDeserialiser {
 	
 	// MARK: Conversion
 	
-	func deserialiseRoot<R : Serialisable>() throws -> R {
+	private func deserialiseRoot<R : Serialisable>() throws -> R {
 		guard let root = objects.last else { throw DeserialiseError.EmptyInput }
 		return try deserialise(root)
 	}
@@ -47,7 +51,7 @@ final class Deserialiser: PrimitiveDeserialiser {
 	/// Unconstrained `deserialise` implementation.
 	/// Used for decoding arrays and dictionaries whose conformance to `Serialisable` can't be specialised.
 	/// - Requires: `_R : Serialisable`. A runtime error will be raised otherwise.
-	func unconstrainedDeserialise<_R>(primitive: Primitive) throws -> _R {
+	private func unconstrainedDeserialise<_R>(primitive: Primitive) throws -> _R {
 		guard let R = _R.self as? Serialisable.Type else {
 			preconditionFailure("Could not decode object: \(_R.self) does not conform to Serialisable.")
 		}
@@ -56,11 +60,28 @@ final class Deserialiser: PrimitiveDeserialiser {
 			return try unconstrainedDeserialise(objects[Int(i)])
 		}
 		
-		return try R.createByDeserialising(Deserialising(primitive: primitive, deserialiser: self)) as! _R
+		return try R.createByDeserialising(Deserialising(primitive: primitive, deserialiser: forwarder)) as! _R
 	}
 	
-	func deserialise<R : Serialisable>(primitive: Primitive) throws -> R {
+	private func deserialise<R : Serialisable>(primitive: Primitive) throws -> R {
 		return try unconstrainedDeserialise(primitive)
+	}
+	
+	private var forwarder: PrimitiveDeserialiserForwarder!
+	
+	/// Private proxy struct to hide conformance to internal protocol
+	private struct PrimitiveDeserialiserForwarder: PrimitiveDeserialiser {
+		
+		weak var deserialiser: Deserialiser!
+		
+		func deserialise<R : Serialisable>(primitive: Primitive) throws -> R {
+			return try deserialiser.deserialise(primitive)
+		}
+		
+		func unconstrainedDeserialise<_R>(primitive: Primitive) throws -> _R {
+			return try deserialiser.unconstrainedDeserialise(primitive)
+		}
+		
 	}
 	
 }

@@ -25,16 +25,18 @@
 //  SOFTWARE.
 //
 
-final class Serialiser {
+public final class Serialiser {
 	
-	// MARK: Initialisers
+	public class func serialiseRoot<T : Serialisable>(v: T, to stream: OutputStream) {
+		let ser = self.init()
+		ser.index(v)
+		ser.indexingFinished = true
+		ser.writeTo(stream)
+	}
 	
 	private var indexingFinished: Bool = false
 	
-	init<T : Serialisable>(serialiseRoot obj: T) {
-		index(obj)
-		indexingFinished = true
-	}
+	private init() { }
 	
 	// MARK: Indexing
 	
@@ -86,7 +88,7 @@ final class Serialiser {
 		return .Reference(UInt32(n-id-1))
 	}
 	
-	func writeTo(stream: OutputStream) {
+	private func writeTo(stream: OutputStream) {
 		// Write in reverse order, since the root object must be last.
 		// TODO: count object references and sort by count, so most used objects get smaller ids
 		for t in objects.reverse() {
