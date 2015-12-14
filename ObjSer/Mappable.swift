@@ -46,13 +46,13 @@ public protocol Mapper {
 
 extension Mappable {
 	
-	static func createByDeserialising(value: Deserialising) throws -> Self {
+	public static func createByDeserialising(value: Deserialising) throws -> Self {
 		var v = Self.createForMapping()
 		try DeserialisingMapper(deserialising: value).map(&v)
 		return v
 	}
 	
-	var serialisingValue: Serialising {
+	public var serialisingValue: Serialising {
 		return Serialising(map: SerialisingMapper().map(self))
 	}
 	
