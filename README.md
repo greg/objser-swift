@@ -1,12 +1,16 @@
-# Object Graph Serialisation (ObjSer) for Swift [![GitHub release](https://img.shields.io/github/release/partiallyfinite/objser-swift.svg)](https://github.com/PartiallyFinite/objser-swift/releases) [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+# Object Graph Serialisation (ObjSer) for Swift
+
+[![GitHub license](https://img.shields.io/github/license/ObjSer/objser-swift.svg)](https://github.com/ObjSer/objser-swift/blob/master/LICENSE)
+[![GitHub release](https://img.shields.io/github/release/ObjSer/objser-swift.svg)](https://github.com/ObjSer/objser-swift/releases)
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
 ObjSer reference implementation in Swift.
 
-*Note: Though this library currently complies with the ObjSer specification, it is in alpha stages and is not recommended for production use as it is largely untested, and the API is subject to breaking changes.*
+*Note: Though this library complies with the ObjSer specification, it is in alpha stages and is not recommended for production use as it is largely untested, and the API is subject to breaking changes.*
 
 ## Features
 
-See the [ObjSer](https://github.com/PartiallyFinite/objser) repository for a description of the serialisation format.
+See the [ObjSer](https://github.com/ObjSer/objser) repository for a description of the serialisation format.
 
 - Serialisation of any Swift type, including custom structs, classes, and enums (protocol conformance required, but provided by the library for most standard library types)
 - Serialisation of **any object graph**, including cyclic graphs (where objects reference each other in a loop)
