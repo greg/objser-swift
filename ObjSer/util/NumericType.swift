@@ -68,7 +68,7 @@ extension AnyNumber {
 	
 }
 
-public protocol AnyInteger: AnyNumber, Comparable, Equatable {
+public protocol AnyInteger: AnyNumber, Comparable, Equatable, Hashable {
 	
 	init<T: AnyInteger>(_ v: T)
 	init(_ v: Int8)
@@ -125,7 +125,7 @@ extension AnyInteger {
 		self = v
 	}
 	
-	public func convert<R: AnyInteger>(unsigned unsigned: Bool = R.min == 0) -> R? {
+	public func convert<R: AnyInteger>(unsigned unsigned: Bool = R.min == R(0)) -> R? {
 		if unsigned {
 			if self < Self(0) { return nil }
 			if sizeof(R) >= sizeof(Self) { return R(self) }
@@ -156,10 +156,6 @@ extension AnyInteger {
 	
 }
 
-func ==<T: AnyInteger, U: AnyInteger>(a: T, b: U) -> Bool {
-	return false
-}
-
 extension Int8: AnyInteger { }
 extension UInt8: AnyInteger { }
 extension Int16: AnyInteger { }
@@ -172,7 +168,7 @@ extension Int: AnyInteger { }
 extension UInt: AnyInteger { }
 
 
-public protocol AnyFloat: AnyNumber, Comparable, Equatable {
+public protocol AnyFloat: AnyNumber, Comparable, Equatable, Hashable {
 	
 	init<T: AnyFloat>(_ v: T)
 	init(_ v: Float32)

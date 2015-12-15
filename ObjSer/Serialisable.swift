@@ -26,29 +26,59 @@
 //
 
 /// An object that can be serialised.
+/// - Remarks: A regular initialiser cannot be used in this protocol due to the impossibility of obtaining a value for an object before `init` completes, making it impossible to recreate cyclic graphs.
+/// - Note: Value types may implement `InitableSerialisable` instead.
 public protocol Serialisable {
 	
-	/// Initialise an instance of `self` from the given serialised value.
-	/// - Remarks: This is a workaround for the impossibility of implementing initialisers as extensions on non-final classes.
-	/// - Note: If you are able to implement a required initialiser on your type, conform to `InitableEncoding` instead.
-	static func createByDeserialising(value: Deserialising) throws -> Self
+	// Inexact return type is a workaround for compiler error: Method 'createForDeserialising()' in non-final class must return `Self` to conform to protocol 'Serialisable'
+	/// Initialise an instance of `self` for deserialising.
+	static func createForDeserialising() -> Serialisable /* Self */
+	
+	mutating func deserialiseFrom(value: Deserialising) throws
 	
 	var serialisingValue: Serialising { get }
 	
 }
 
-/// An object that can be serialised and is able to implement required initialisers.
-public protocol InitableSerialisable: Serialisable {
+/// An object that can be serialised and is **never** part of a cycle. This includes all value types.
+/// - Warning: If a cycle containing an object conforming to this protocol is encountered, deserialisation will fail.
+public protocol AcyclicSerialisable: Serialisable {
+	
+	/// Initialise an instance of `self` from the given serialised value.
+	/// - Remarks: This is a workaround for the impossibility of implementing initialisers as extensions on non-final classes.
+	/// - Note: If you are able to implement a required initialiser on your type, conform to `InitableSerialisable` instead.
+	static func createByDeserialising(value: Deserialising) throws -> Self
+	
+}
+
+/// An object that can be serialised, is **never** part of a cycle, and is able to implement required initialisers. This includes all value types.
+/// - Warning: If a cycle containing an object conforming to this protocol is encountered, deserialisation will fail.
+public protocol InitableSerialisable: AcyclicSerialisable {
 	
 	/// Initialise from the given encoded value.
 	init(deserialising value: Deserialising) throws
 	
 }
 
+extension AcyclicSerialisable {
+	
+	@transparent
+	public static func createForDeserialising() -> Serialisable {
+		preconditionFailure("createForDeserialising() must never be called on \(Self.self) : AcyclicSerialisable. Please report this bug.")
+	}
+	
+	@transparent
+	public func deserialiseFrom(value: Deserialising) throws {
+		preconditionFailure("deserialiseFrom(:) must never be called on \(Self.self) : AcyclicSerialisable. Please report this bug.")
+	}
+	
+}
+
 extension InitableSerialisable {
 	
-	@transparent public static func createByDeserialising(value: Deserialising) throws -> Self {
-		return try Self.init(deserialising: value)
+	@transparent
+	public static func createByDeserialising(value: Deserialising) throws -> Self {
+		return try self.init(deserialising: value)
 	}
 	
 }
@@ -133,7 +163,7 @@ protocol PrimitiveDeserialiser {
 public struct Deserialising {
 	
 	private let primitive: Primitive
-	private let deserialiser: PrimitiveDeserialiser
+	let deserialiser: PrimitiveDeserialiser
 	
 	init(primitive: Primitive, deserialiser: PrimitiveDeserialiser) {
 		self.primitive = primitive
@@ -225,18 +255,26 @@ public struct Deserialising {
 		})
 	}
 	
+	public func objectValue<R : Serialisable>() throws -> R {
+		return try deserialiser.deserialise(primitive)
+	}
+	
+	public func unconstrainedObjectValue<_R>() throws -> _R {
+		return try deserialiser.unconstrainedDeserialise(primitive)
+	}
+	
 }
 
 extension Deserialising {
 
 	/// Helper function for implementing the Mapping protocol.
-	func stringKeyedPrimitiveMapValue() throws -> (value: AnySequence<(String, Primitive)>, deserialiser: PrimitiveDeserialiser) {
+	func stringKeyedPrimitiveMapValue() throws -> AnySequence<(String, Primitive)> {
 		guard case .Map(let a) = primitive else {
 			throw DeserialiseError.IncorrectType(self)
 		}
-		return (AnySequence(try PairSequence(a).map {
+		return AnySequence(try PairSequence(a).map {
 			(try deserialiser.unconstrainedDeserialise($0.0) as String, $0.1)
-		}), deserialiser)
+		})
 	}
 	
 }

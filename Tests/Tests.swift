@@ -131,5 +131,46 @@ class Tests: XCTestCase {
 			XCTFail("\(error)")
 		}
 	}
-    
+	
+	func testCyclePrevention() {
+		
+		class Cyclic: Mappable {
+			
+			var a = 5
+			var c: Cyclic!
+			
+			required init() { }
+			
+			private static func createForMapping() -> Self {
+				return self.init()
+			}
+			
+			private func mapWith(mapper: Mapper) {
+				mapper.map(&a, forKey: "a")
+				mapper.map(&c, forKey: "c")
+			}
+			
+		}
+		
+		let a = Cyclic()
+		a.c = a
+		
+		let o = OutputStream()
+		Serialiser.serialiseRoot(a, to: o)
+		print(o.bytes.map({ String($0, radix: 16) }).joinWithSeparator(" "))
+		
+		do {
+			let b: Cyclic = try Deserialiser.deserialiseFrom(InputStream(bytes: o.bytes))
+			XCTAssert(b === b.c)
+			XCTAssertEqual(b.a, a.a)
+		}
+		catch {
+			XCTFail("\(error)")
+		}
+		
+		// prevent memory leak
+		a.c = nil
+		
+	}
+	
 }

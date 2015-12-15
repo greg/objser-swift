@@ -41,7 +41,7 @@ public final class Serialiser {
 	// MARK: Indexing
 	
 	private var objects = ContiguousArray<Primitive!>()
-	private var objectIDs = [(UnsafePointer<Void>) : Int]()
+	private var objectIDs = [ObjectIdentifier : Int]()
 	private var stringIDs = [String : Int]()
 	
 	private func index(v: Serialisable) -> Int {
@@ -54,14 +54,13 @@ public final class Serialiser {
 			}
 			stringIDs[s] = newID
 		}
-		// check that the dynamic type is a class to exclude automagically bridged types like String, Int and Float/Double.
-		else if v.dynamicType is AnyClass, let o = v as? AnyObject {
-			// only objects can cause cycles
-			let addr = unsafeAddressOf(o)
-			if let id = objectIDs[addr] {
+		// deduplicate objects to prevent cycles, exclude ImplicitlyUnwrappedOptional
+		else if !(v is ImplicitlyUnwrappedOptionalType), let o = v as? AnyObject {
+			let oid = ObjectIdentifier(o)
+			if let id = objectIDs[oid] {
 				return id
 			}
-			objectIDs[addr] = newID
+			objectIDs[oid] = newID
 		}
 		
 		let ser = v.serialisingValue
