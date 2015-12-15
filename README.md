@@ -1,4 +1,4 @@
-# Object Graph Serialisation (ObjSer) for Swift
+# ObjSer: object graph serialisation for Swift
 
 [![GitHub license](https://img.shields.io/github/license/ObjSer/objser-swift.svg)](https://github.com/ObjSer/objser-swift/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/ObjSer/objser-swift.svg)](https://github.com/ObjSer/objser-swift/releases)
@@ -15,6 +15,26 @@ See the [ObjSer](https://github.com/ObjSer/objser) repository for a description 
 - Serialisation of any Swift type, including custom structs, classes, and enums (protocol conformance required, but provided by the library for most standard library types)
 - Serialisation of **any object graph**, including cyclic graphs (where objects reference each other in a loop)
 - Deduplication: objects that are referenced multiple times are only stored once
+
+## Installation
+
+### Carthage
+
+[Carthage](https://github.com/Carthage/Carthage) is a simple, decentralised dependency manager. Add the following line to your [Cartfile](https://github.com/Carthage/Carthage/blob/master/Documentation/Artifacts.md#cartfile):
+
+```
+github "ObjSer/objser-swift" ~> 0.1
+```
+
+After running `carthage update`, add the relevant framework (ObjSer iOS or ObjSer Mac) from Carthage/Build to the Embedded Binaries section in your target.
+
+### Manual
+
+Download or clone the repository, and drag ObjSer.xcodeproj into your project. In your target settings, add the relevant framework (ObjSer iOS or ObjSer Mac) to the Embedded Binaries section in the General tab, and to Target Dependences in the Build Phases tab.
+
+OR
+
+Add all source files in the Objser folder directly to your project. They will be treated as part of your project's module, which may cause namespace conflicts.
 
 ## Usage
 
