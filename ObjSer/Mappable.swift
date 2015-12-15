@@ -46,10 +46,12 @@ public protocol Mapper {
 
 extension Mappable {
 	
-	public static func createByDeserialising(value: Deserialising) throws -> Self {
-		var v = Self.createForMapping()
-		try DeserialisingMapper(deserialising: value).map(&v)
-		return v
+	static func createForDeserialising() -> Serialisable /* Self */ {
+		return self.createForMapping()
+	}
+	
+	public mutating func deserialiseFrom(value: Deserialising) throws {
+		try DeserialisingMapper(deserialising: value).map(&self)
 	}
 	
 	public var serialisingValue: Serialising {
@@ -81,12 +83,11 @@ private final class DeserialisingMapper: Mapper {
 	
 	private init(deserialising value: Deserialising) throws {
 		do {
-			let (map, deserialiser) = try value.stringKeyedPrimitiveMapValue()
-			self.deserialiser = deserialiser
-			self.map = Dictionary(sequence: map)
+			self.map = Dictionary(sequence: try value.stringKeyedPrimitiveMapValue())
+			self.deserialiser = value.deserialiser
 		}
 		catch {
-			// All stored properties of a class instance must be initialized before throwing from an initializer
+			// "All stored properties of a class instance must be initialized before throwing from an initializer"
 			self.deserialiser = nil
 			self.map = [:]
 			throw error

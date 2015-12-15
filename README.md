@@ -72,10 +72,12 @@ The `Serialisable` protocol is intended for encoding primitive types: integers, 
 
 Conformance extensions for most standard library types are provided, so using this protocol is rarely necessary.
 
-If you are extending a non-final class out of your control, e.g. `NSData`, and are not able to add required initialisers, conform to `Serialisable`:
+If you are extending a class that may be part of a cycle in the object graph, conform to `Serialisable` directly.
+
+If you are extending a non-final class out of your control that **never forms cycles**, e.g. `NSData`, and are not able to add required initialisers, conform to `AcyclicSerialisable`:
 
 ```swift
-extension NSData: Serialisable {
+extension NSData: AcyclicSerialisable {
 	
 	public static func createByDeserialising(value: Deserialising) throws -> Self {
 		let bytes = try value.dataValue()
@@ -95,7 +97,7 @@ extension NSData: Serialisable {
 }
 ```
 
-If you are able to implement required initialisers in a class, and it is more convenient to do so than use a static method, conform to `InitableSerialisable` instead: 
+If you are able to implement required initialisers in a type *that also matches the previous criteria*, and it is more convenient to do so than use a static method, conform to `InitableSerialisable` instead: 
 
 ```swift
 extension Bool: InitableSerialisable {
@@ -111,7 +113,7 @@ extension Bool: InitableSerialisable {
 }
 ```
 
-See [Conformance.swift](ObjSer/Conformance.swift) for further examples.
+See [Serialisable.swift](ObjSer/Serialisable.swift) for explanatory documentation, and [Conformance.swift](ObjSer/Conformance.swift) for further examples.
 
 **Note:** Do not catch errors thrown by `Deserialising`'s accessor functions, unless you intend to try a different primitive value if one does not work. If initialisation fails, rethrow a caught error, or throw a new one.
 
@@ -145,8 +147,6 @@ It is not currently possible to correctly deserialise collections of non-concret
 ## Implementation notes
 
 -	The errors thrown by various functions are currently largely undocumented, and their associated objects are not very useful for determining the cause of an error. These will be significantly changed, and should not be depended on (use `try?` on throwing functions instead trying to make sense of a caught error).
-
--	Serialisable types that are not `Mappable` should not introduce cycles into the object graph, due to a workaround used by `Serialiser` that will be fixed soon.
 
 -	The current `InputStream` and `OutputStream` structs are temporary; a better IO API will be added in the future.
 

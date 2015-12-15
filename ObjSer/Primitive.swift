@@ -28,7 +28,7 @@
 /// Defines the ObjSer primitive types.
 enum Primitive {
 	
-	/// A promised value with an attached function that will be called to resolve the primitive for writing.
+	/// A promised value with an attached function that will be called to resolve the primitive for use.
 	case Promised(() -> Primitive)
 	
 	case Reference(UInt32)
@@ -39,7 +39,7 @@ enum Primitive {
 	case String(Swift.String)
 	case Data(ByteArray)
 	indirect case Array(ContiguousArray<Primitive>)
-	/// Provide an array of alternating keys and values.
+	/// A map, represented by an array of alternating keys and values.
 	indirect case Map(ContiguousArray<Primitive>)
 	
 }

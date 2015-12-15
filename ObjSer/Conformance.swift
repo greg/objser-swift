@@ -100,7 +100,7 @@ extension String: InitableSerialisable {
 }
 
 
-extension NSData: Serialisable {
+extension NSData: AcyclicSerialisable {
 	
 	public static func createByDeserialising(value: Deserialising) throws -> Self {
 		let bytes = try value.dataValue()
@@ -152,7 +152,7 @@ extension Dictionary: InitableSerialisable {
 extension Optional: InitableSerialisable {
 	
 	public init(deserialising value: Deserialising) throws {
-		guard let W = Wrapped.self as? Serialisable.Type else {
+		guard let _ = Wrapped.self as? Serialisable.Type else {
 			preconditionFailure("Wrapped type \(Wrapped.self) does not conform to Serialisable.")
 		}
 		do {
@@ -160,7 +160,7 @@ extension Optional: InitableSerialisable {
 			self = nil
 		}
 		catch {
-			self = (try W.createByDeserialising(value) as! Wrapped)
+			self = try value.unconstrainedObjectValue() as Wrapped
 		}
 	}
 	
@@ -173,6 +173,10 @@ extension Optional: InitableSerialisable {
 	}
 	
 }
+
+/// Workaround to allow identifying any implicitly unwrapped optional, regardless of generic type.
+protocol ImplicitlyUnwrappedOptionalType { }
+extension ImplicitlyUnwrappedOptional: ImplicitlyUnwrappedOptionalType { }
 
 extension ImplicitlyUnwrappedOptional: InitableSerialisable {
 	
