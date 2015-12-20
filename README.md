@@ -12,7 +12,8 @@ ObjSer reference implementation in Swift.
 
 See the [ObjSer](https://github.com/ObjSer/objser) repository for a description of the serialisation format.
 
-- Serialisation of any Swift type, including custom structs, classes, and enums (protocol conformance required, but provided by the library for most standard library types)
+- Serialisation of any Swift type, including custom structs, classes, and enums ([protocol conformance](#custom-types) required, but provided by the library for most standard library types)
+- Serialisation of values & collections of non-concrete type (see [Protocol types](#protocol-types-and-collections-thereof))
 - Serialisation of **any object graph**, including cyclic graphs (where objects reference each other in a loop)
 - Deduplication: objects that are referenced multiple times are only stored once
 
@@ -23,7 +24,7 @@ See the [ObjSer](https://github.com/ObjSer/objser) repository for a description 
 [Carthage](https://github.com/Carthage/Carthage) is a simple, decentralised dependency manager. Add the following line to your [Cartfile](https://github.com/Carthage/Carthage/blob/master/Documentation/Artifacts.md#cartfile):
 
 ```
-github "ObjSer/objser-swift" ~> 0.2
+github "ObjSer/objser-swift" ~> 0.3
 ```
 
 After running `carthage update`, add the relevant framework (ObjSer iOS or ObjSer Mac) from Carthage/Build to the Embedded Binaries section in your target.
@@ -140,9 +141,25 @@ extension CGPoint: Mappable {
 }
 ```
 
-### Collections of protocol type
+### Protocol types, and collections thereof
 
-It is not currently possible to correctly deserialise collections of non-concrete types. This functionality will be added soon.
+To serialise an object of protocol type, the object must be saved along with a unique type identifier so it can be correctly deserialised. Override the static variable `typeUniqueIdentifier` in each concrete type you plan to serialise when stored in a variable of protocol type, to return a unique value:
+
+```swift
+extension Int {
+    static var typeUniqueIdentifier: String? {
+        return "Int"
+    }
+}
+```
+
+To successfully deserialise a collection of protocol type, pass an array of the types that may occur in the collection to the deserialiser:
+
+```swift
+let array: [Serialisable] = try Deserialiser.deserialiseFrom(stream, identifiableTypes: [Int.self, Float.self])
+```
+
+Note: `typeUniqueIdentifier` is defined in the `Serialisable` protocol. All protocol types must conform to the `Serialisable` protocol in order to be serialised.
 
 ## Implementation notes
 

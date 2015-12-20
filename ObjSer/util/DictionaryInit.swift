@@ -26,12 +26,12 @@
 //
 
 extension Dictionary {
-	
-	init<S : SequenceType where S.Generator.Element == (Key, Value)>(sequence: S) {
-		self.init(minimumCapacity: sequence.underestimateCount())
-		for (k, v) in sequence {
-			self[k] = v
-		}
-	}
-	
+    
+    init<S : SequenceType where S.Generator.Element == (Key, Value)>(sequence: S) {
+        self.init(minimumCapacity: sequence.underestimateCount())
+        for (k, v) in sequence {
+            self[k] = v
+        }
+    }
+    
 }
