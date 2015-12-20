@@ -48,6 +48,7 @@ public final class Deserialiser {
             guard let id = t.typeUniqueIdentifier else {
                 throw DeserialiseError.UnidentifiableType(t)
             }
+            precondition(self.identifiableTypes[id] == nil, "Duplicate type unique identifier '\(id)' for \(t) and \(self.identifiableTypes[id]!)")
             self.identifiableTypes[id] = t
         }
     }

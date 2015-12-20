@@ -93,6 +93,24 @@ struct B: P {
     
 }
 
+struct G<T: Serialisable>: P {
+    
+    var v: T!
+    
+    static func createForMapping() -> G {
+        return self.init(v: nil)
+    }
+    
+    mutating func mapWith(mapper: Mapper) {
+        mapper.map(&v, forKey: "v")
+    }
+    
+    static var typeUniqueIdentifier: String? {
+        return "G-\(T.self)"
+    }
+    
+}
+
 class Tests: XCTestCase {
     
     override func setUp() {
@@ -229,6 +247,25 @@ class Tests: XCTestCase {
             print(String(a))
             print(String(b))
             XCTAssert(String(a) == String(b) && a[2] as! Cyclic == b[2] as! Cyclic)
+        }
+        catch {
+            XCTFail("\(error)")
+        }
+    }
+    
+    func testGenerics() {
+        
+        let a: [P] = [G<Int>(v: 15312), G<Float>(v: 3.14)]
+        
+        let o = OutputStream()
+        Serialiser.serialiseRoot(a, to: o)
+        print(o.bytes.map({ String($0, radix: 16) }).joinWithSeparator(" "))
+        
+        do {
+            let b: [P] = try Deserialiser.deserialiseFrom(InputStream(bytes: o.bytes), identifiableTypes: [G<Int>.self, G<Float>.self])
+            print(String(a))
+            print(String(b))
+            XCTAssert(String(a) == String(b))
         }
         catch {
             XCTFail("\(error)")

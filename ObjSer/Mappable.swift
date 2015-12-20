@@ -104,6 +104,10 @@ private final class DeserialisingMapper: Mapper {
     private func map<T : Mappable>(inout v: T) throws {
         mappingType = T.self
         v.mapWith(self)
+        if let error = mapErrorToThrow {
+            mapErrorToThrow = nil
+            throw error
+        }
     }
     
     func map<V : Serialisable>(inout v: V, forKey key: String) {
