@@ -83,7 +83,7 @@ extension Primitive {
 				switch v {
 				case 0...0b0011_1111:
 					stream.write(Format.PosInt6.byte | Byte(v))
-				case -0b0001_1111..<0:
+				case -32..<0:
 					stream.write(Byte(bitPattern: v))
 				default:
 					stream.write(Format.Int8.byte, Byte(bitPattern: v))
