@@ -38,6 +38,17 @@ public protocol Serialisable {
 	
 	var serialisingValue: Serialising { get }
 	
+	/// The identifier stored with instances of the type to aid with resolving ambiguity in deserialisation (e.g. collections of protocol type).
+	static var typeUniqueIdentifier: String? { get }
+	
+}
+
+extension Serialisable {
+	
+	public static var typeUniqueIdentifier: String? {
+		return nil
+	}
+	
 }
 
 /// An object that can be serialised and is **never** part of a cycle. This includes all value types.
@@ -87,7 +98,7 @@ public struct Serialising: NilLiteralConvertible {
 	
 	private enum State {
 		case Converted(Primitive)
-		case Convertible((Serialisable -> Primitive) -> Primitive)
+		case Convertible(((Serialisable, typeIdentified: Bool) -> Primitive) -> Primitive)
 	}
 	private let state: State
 	
@@ -115,36 +126,36 @@ public struct Serialising: NilLiteralConvertible {
 		state = .Converted(.Data(ByteArray(bytes)))
 	}
 	
-	public init<S : SequenceType where S.Generator.Element == Serialisable>(array seq: S) {
+	public init<S : SequenceType where S.Generator.Element == Serialisable>(array seq: S, typeIdentified: Bool = false) {
 		state = .Convertible({ serialise in
 			var a = ContiguousArray<Primitive>()
 			a.reserveCapacity(seq.underestimateCount())
 			for serialisable in seq {
-				a.append(serialise(serialisable))
+				a.append(serialise(serialisable, typeIdentified: typeIdentified))
 			}
 			return .Array(a)
 		})
 	}
 	
-	public init<S : SequenceType where S.Generator.Element == (Serialisable, Serialisable)>(map seq: S) {
+	public init<S : SequenceType where S.Generator.Element == (Serialisable, Serialisable)>(map seq: S, typeIdentifiedKeys: Bool = false, typeIdentifiedValues: Bool = false) {
 		state = .Convertible({ serialise in
 			var a = ContiguousArray<Primitive>()
 			a.reserveCapacity(seq.underestimateCount() * 2)
 			for (serialisableKey, serialisableVal) in seq {
-				a.append(serialise(serialisableKey))
-				a.append(serialise(serialisableVal))
+				a.append(serialise(serialisableKey, typeIdentified: typeIdentifiedKeys))
+				a.append(serialise(serialisableVal, typeIdentified: typeIdentifiedValues))
 			}
 			return .Map(a)
 		})
 	}
 	
-	public init(serialising value: Serialisable) {
+	public init(serialising value: Serialisable, typeIdentified: Bool = false) {
 		state = .Convertible({ serialise in
-			serialise(value)
+			serialise(value, typeIdentified: typeIdentified)
 		})
 	}
 	
-	func convertUsing(serialiser: Serialisable -> Primitive) -> Primitive {
+	func convertUsing(serialiser: (serialisable: Serialisable, typeIdentified: Bool) -> Primitive) -> Primitive {
 		switch state {
 		case .Converted(let p): return p
 		case .Convertible(let conv): return conv(serialiser)

@@ -28,20 +28,28 @@
 public final class Deserialiser {
 	
 	@warn_unused_result
-	public class func deserialiseFrom<R : Serialisable>(stream: InputStream) throws -> R {
-		let des = try self.init(readFrom: stream)
+	public class func deserialiseFrom<R : Serialisable>(stream: InputStream, identifiableTypes: [Serialisable.Type] = []) throws -> R {
+		let des = try self.init(readFrom: stream, identifiableTypes: identifiableTypes)
 		return try des.deserialiseRoot()
 	}
 	
 	private var primitives = ContiguousArray<Primitive>()
 	private var deserialised = ContiguousArray<Serialisable?>()
+	private var identifiableTypes = [String : Serialisable.Type]()
 	
-	private init(readFrom stream: InputStream) throws {
+	private init(readFrom stream: InputStream, identifiableTypes: [Serialisable.Type]) throws {
 		forwarder = PrimitiveDeserialiserForwarder(deserialiser: self)
 		while stream.hasBytesAvailable {
 			primitives.append(try Primitive(readFrom: stream))
 		}
 		deserialised = ContiguousArray(count: primitives.count, repeatedValue: nil)
+		
+		for t in identifiableTypes {
+			guard let id = t.typeUniqueIdentifier else {
+				throw DeserialiseError.UnidentifiableType(t)
+			}
+			self.identifiableTypes[id] = t
+		}
 	}
 	
 	// MARK: Conversion
@@ -53,22 +61,34 @@ public final class Deserialiser {
 	}
 	
 	@warn_unused_result
-	private func unconstrainedDeserialiseIndex<_R>(i: Int) throws -> _R {
+	private func unconstrainedDeserialiseIndex<_R>(i: Int, var type R: Any.Type = _R.self) throws -> _R {
 		if let v = deserialised[i] {
 			return v as! _R
 		}
-		guard let R = _R.self as? Serialisable.Type else {
+		let primitive: Primitive
+		if case .TypeIdentified(let id, let p) = primitives[i] {
+			let id = try deserialise(id) as String
+			guard let type = identifiableTypes[id] else {
+				throw DeserialiseError.UnknownTypeID(id)
+			}
+			R = type
+			primitive = p
+		}
+		else {
+			primitive = primitives[i]
+		}
+		guard let R = R.self as? Serialisable.Type else {
 			preconditionFailure("Could not decode object: \(_R.self) does not conform to Serialisable.")
 		}
 		if R is AcyclicSerialisable.Type {
-			let r = try unconstrainedDeserialise(primitives[i]) as _R
+			let r = try unconstrainedDeserialise(primitive, type: R) as _R
 			deserialised[i] = (r as! Serialisable)
 			return r
 		}
 		else {
 			let r = R.createForDeserialising() as! _R
 			deserialised[i] = (r as! Serialisable)
-			return try unconstrainedDeserialise(primitives[i], forObject: r)
+			return try unconstrainedDeserialise(primitive, forObject: r, type: R)
 		}
 	}
 	
@@ -81,14 +101,24 @@ public final class Deserialiser {
 	/// Used for decoding arrays and dictionaries whose conformance to `Serialisable` can't be specialised.
 	/// - Requires: `_R : Serialisable`. A runtime error will be raised otherwise.
 	@warn_unused_result
-	private func unconstrainedDeserialise<_R>(primitive: Primitive, forObject object: _R? = nil) throws -> _R {
-		guard let R = _R.self as? Serialisable.Type else {
-			preconditionFailure("Could not decode object: \(_R.self) does not conform to Serialisable.")
+	private func unconstrainedDeserialise<_R>(primitive: Primitive, forObject object: _R? = nil, type R: Any.Type = _R.self) throws -> _R {
+		if case .TypeIdentified(let id, let p) = primitive {
+			let id = try deserialise(id) as String
+			guard let type = identifiableTypes[id] else {
+				throw DeserialiseError.UnknownTypeID(id)
+			}
+			return try unconstrainedDeserialise(p, type: type) as _R
 		}
+		
 		// Resolve references
 		if case .Reference(let i) = primitive {
-			return try unconstrainedDeserialiseIndex(Int(i))
+			return try unconstrainedDeserialiseIndex(Int(i), type: R)
 		}
+		
+		guard let _T = R.self as? Serialisable.Type else {
+			preconditionFailure("Could not decode object: \(R.self) does not conform to Serialisable.")
+		}
+		let R = _T
 		
 		let des = Deserialising(primitive: primitive, deserialiser: forwarder)
 		
@@ -104,7 +134,6 @@ public final class Deserialiser {
 		else {
 			obj = R.createForDeserialising()
 		}
-		print("ot", obj.dynamicType)
 		try obj.deserialiseFrom(des)
 		return obj as! _R
 	}

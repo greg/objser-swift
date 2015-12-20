@@ -31,5 +31,8 @@ public enum DeserialiseError: ErrorType {
 	case IncorrectType(Any)
 	case ConversionFailed(Any)
 	case MapFailed(type: Mappable.Type, key: String)
+	case UnidentifiableType(Serialisable.Type)
+	case UnknownTypeID(String)
+	case IdentifiableTypeMismatch(type: Serialisable.Type, shouldConformTo: Serialisable.Type)
 	
 }

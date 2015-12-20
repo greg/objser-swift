@@ -38,6 +38,7 @@ enum Primitive {
 	case Float(AnyFloat)
 	case String(Swift.String)
 	case Data(ByteArray)
+	indirect case TypeIdentified(name: Primitive, value: Primitive)
 	indirect case Array(ContiguousArray<Primitive>)
 	/// A map, represented by an array of alternating keys and values.
 	indirect case Map(ContiguousArray<Primitive>)
@@ -160,6 +161,11 @@ extension Primitive {
 				stream.write(Format.Map.byte)
 				Primitive.Array(a).writeTo(stream)
 			}
+			
+		case .TypeIdentified(let name, let v):
+			stream.write(Format.TypeID.byte)
+			name.writeTo(stream)
+			v.writeTo(stream)
 		}
 	}
 	
@@ -304,6 +310,9 @@ extension Primitive {
 			self = .Map(v)
 		case Format.EMap.byte:
 			self = .Map([])
+			
+		case Format.TypeID.byte:
+			self = .TypeIdentified(name: try Primitive(readFrom: stream), value: try Primitive(readFrom: stream))
 			
 		case Format.Sentinel.byte:
 			throw FormatError.SentinelReached

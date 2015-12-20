@@ -28,6 +28,71 @@
 import XCTest
 @testable import ObjSer
 
+
+protocol P: Mappable {
+	
+}
+
+class Cyclic: P {
+	
+	var a = 5
+	weak var c: Cyclic!
+	
+	required init() {
+		c = self
+	}
+	
+	required init(m: ()) { }
+	
+	static func createForMapping() -> Self {
+		return self.init(m: ())
+	}
+	
+	func mapWith(mapper: Mapper) {
+		mapper.map(&a, forKey: "a")
+		mapper.map(&c, forKey: "c")
+	}
+	
+	static var typeUniqueIdentifier: String? = "Cyclic"
+	
+}
+
+func ==(a: Cyclic, b: Cyclic) -> Bool {
+	return a.a == b.a && a.c === a && b.c === b
+}
+
+struct A: P {
+	
+	var a: Int
+	
+	static func createForMapping() -> A {
+		return self.init(a: 0)
+	}
+	
+	mutating func mapWith(mapper: Mapper) {
+		mapper.map(&a, forKey: "a")
+	}
+	
+	static var typeUniqueIdentifier: String? = "A"
+	
+}
+
+struct B: P {
+	
+	var b: Float
+	
+	static func createForMapping() -> B {
+		return self.init(b: 0)
+	}
+	
+	mutating func mapWith(mapper: Mapper) {
+		mapper.map(&b, forKey: "b")
+	}
+	
+	static var typeUniqueIdentifier: String? = "B"
+	
+}
+
 class Tests: XCTestCase {
     
     override func setUp() {
@@ -134,26 +199,7 @@ class Tests: XCTestCase {
 	
 	func testCyclePrevention() {
 		
-		class Cyclic: Mappable {
-			
-			var a = 5
-			var c: Cyclic!
-			
-			required init() { }
-			
-			private static func createForMapping() -> Self {
-				return self.init()
-			}
-			
-			private func mapWith(mapper: Mapper) {
-				mapper.map(&a, forKey: "a")
-				mapper.map(&c, forKey: "c")
-			}
-			
-		}
-		
 		let a = Cyclic()
-		a.c = a
 		
 		let o = OutputStream()
 		Serialiser.serialiseRoot(a, to: o)
@@ -161,16 +207,32 @@ class Tests: XCTestCase {
 		
 		do {
 			let b: Cyclic = try Deserialiser.deserialiseFrom(InputStream(bytes: o.bytes))
-			XCTAssert(b === b.c)
-			XCTAssertEqual(b.a, a.a)
+			XCTAssert(a == b)
 		}
 		catch {
 			XCTFail("\(error)")
 		}
 		
-		// prevent memory leak
-		a.c = nil
+	}
+	
+	func testProtocolTypes() {
 		
+		let c = Cyclic()
+		let a: [P] = [A(a: -32), B(b: 4.7), c]
+		
+		let o = OutputStream()
+		Serialiser.serialiseRoot(a, to: o)
+		print(o.bytes.map({ String($0, radix: 16) }).joinWithSeparator(" "))
+		
+		do {
+			let b: [P] = try Deserialiser.deserialiseFrom(InputStream(bytes: o.bytes), identifiableTypes: [A.self, B.self, Cyclic.self])
+			print(String(a))
+			print(String(b))
+			XCTAssert(String(a) == String(b) && a[2] as! Cyclic == b[2] as! Cyclic)
+		}
+		catch {
+			XCTFail("\(error)")
+		}
 	}
 	
 }

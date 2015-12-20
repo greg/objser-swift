@@ -75,10 +75,12 @@ enum Format: Byte {
 	case Map = 0xd6
 	case EMap = 0xd7
 	
+	case TypeID = 0xd8
+	
 	case Sentinel = 0xcf
 	
 	/// 0xd9 – 0xdf
-	case Reserved = 0xd8
+	case Reserved = 0xd9
 	
 	var byte: Byte {
 		switch self {
@@ -97,7 +99,7 @@ enum Format: Byte {
 		case .FString: return 0x71...0x7f
 		case .FData: return 0x61...0x6f
 		case .FArray: return 0x41...0x5f
-		case .Reserved: return 0xd8...0xdf
+		case .Reserved: return 0xd9...0xdf
 		default: return rawValue...rawValue
 		}
 	}

@@ -122,13 +122,13 @@ extension NSData: AcyclicSerialisable {
 extension Array: InitableSerialisable {
 	
 	public init(deserialising value: Deserialising) throws {
-		precondition(Element.self is Serialisable.Type, "Array element type \(Element.self) does not conform to Serialisable.")
 		self = Array(try value.unconstrainedArrayValue())
 	}
 	
 	public var serialisingValue: Serialising {
-		precondition(Element.self is Serialisable.Type, "Array element type \(Element.self) does not conform to Serialisable.")
-		return Serialising(array: self.lazy.map { $0 as! Serialisable })
+		let concrete = Element.self is Serialisable.Type
+		precondition(concrete || reduce(true, combine: { $0 && $1 is Serialisable }), "Array element type \(Element.self) does not conform to Serialisable.")
+		return Serialising(array: lazy.map { $0 as! Serialisable }, typeIdentified: !concrete)
 	}
 	
 }
@@ -136,15 +136,15 @@ extension Array: InitableSerialisable {
 extension Dictionary: InitableSerialisable {
 	
 	public init(deserialising value: Deserialising) throws {
-		precondition(Key.self is Serialisable.Type, "Dictionary key type \(Key.self) does not conform to Serialisable.")
-		precondition(Value.self is Serialisable.Type, "Dictionary value type \(Value.self) does not conform to Serialisable.")
 		self = Dictionary(sequence: try value.unconstrainedMapValue())
 	}
 	
 	public var serialisingValue: Serialising {
-		precondition(Key.self is Serialisable.Type, "Dictionary key type \(Key.self) does not conform to Serialisable.")
-		precondition(Value.self is Serialisable.Type, "Dictionary value type \(Value.self) does not conform to Serialisable.")
-		return Serialising(map: self.lazy.map { ($0.0 as! Serialisable, $0.1 as! Serialisable) })
+		let concreteKeys = Key.self is Serialisable.Type
+		let concreteValues = Value.self is Serialisable.Type
+		precondition(concreteKeys || reduce(true, combine: { $0 && $1.0 is Serialisable }), "Dictionary key type \(Key.self) does not conform to Serialisable.")
+		precondition(concreteValues || reduce(true, combine: { $0 && $1.1 is Serialisable }), "Dictionary value type \(Value.self) does not conform to Serialisable.")
+		return Serialising(map: self.lazy.map { ($0.0 as! Serialisable, $0.1 as! Serialisable) }, typeIdentifiedKeys: !concreteKeys, typeIdentifiedValues: !concreteValues)
 	}
 	
 }
@@ -152,9 +152,6 @@ extension Dictionary: InitableSerialisable {
 extension Optional: InitableSerialisable {
 	
 	public init(deserialising value: Deserialising) throws {
-		guard let _ = Wrapped.self as? Serialisable.Type else {
-			preconditionFailure("Wrapped type \(Wrapped.self) does not conform to Serialisable.")
-		}
 		do {
 			try value.nilValue()
 			self = nil
@@ -165,9 +162,10 @@ extension Optional: InitableSerialisable {
 	}
 	
 	public var serialisingValue: Serialising {
-		precondition(Wrapped.self is Serialisable.Type, "Wrapped type \(Wrapped.self) does not conform to Serialisable.")
+		let concrete = Wrapped.self is Serialisable.Type
+		precondition(concrete || self == nil || self! is Serialisable, "Wrapped type \(self.dynamicType) does not conform to Serialisable.")
 		if let w = self {
-			return Serialising(serialising: w as! Serialisable)
+			return Serialising(serialising: w as! Serialisable, typeIdentified: !concrete)
 		}
 		return nil
 	}
