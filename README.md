@@ -12,7 +12,8 @@ ObjSer reference implementation in Swift.
 
 See the [ObjSer](https://github.com/ObjSer/objser) repository for a description of the serialisation format.
 
-- Serialisation of any Swift type, including custom structs, classes, and enums (protocol conformance required, but provided by the library for most standard library types)
+- Serialisation of any Swift type, including custom structs, classes, and enums ([protocol conformance](#custom-types) required, but provided by the library for most standard library types)
+- Serialisation of values & collections of non-concrete type (see [Protocol types](#protocol-types-and-collections-thereof))
 - Serialisation of **any object graph**, including cyclic graphs (where objects reference each other in a loop)
 - Deduplication: objects that are referenced multiple times are only stored once
 
@@ -140,9 +141,9 @@ extension CGPoint: Mappable {
 }
 ```
 
-### Collections of protocol type
+### Protocol types, and collections thereof
 
-To serialise a collection of protocol type, each object in the collection must be saved along with a unique type identifier. Override the static variable `typeUniqueIdentifier` in each type you need to serialise in such a collection to return a unique value:
+To serialise an object of protocol type, the object must be saved along with a unique type identifier so it can be correctly deserialised. Override the static variable `typeUniqueIdentifier` in each concrete type you plan to serialise when stored in a variable of protocol type, to return a unique value:
 
 ```swift
 extension Int {
