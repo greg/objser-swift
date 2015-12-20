@@ -26,42 +26,42 @@
 //
 
 public class OutputStream {
-	
-	public init() { }
-	
-	public private(set) var bytes = ByteArray()
-	
-	func write(bytes: ByteArray) {
-		self.bytes.appendContentsOf(bytes)
-	}
-	
-	func write(bytes: Byte...) {
-		self.bytes.appendContentsOf(bytes)
-	}
-	
+    
+    public init() { }
+    
+    public private(set) var bytes = ByteArray()
+    
+    func write(bytes: ByteArray) {
+        self.bytes.appendContentsOf(bytes)
+    }
+    
+    func write(bytes: Byte...) {
+        self.bytes.appendContentsOf(bytes)
+    }
+    
 }
 
 public class InputStream {
-	
-	private let bytes: ByteArray
-	private var index: Int = 0
-	
-	var hasBytesAvailable: Bool {
-		return index < bytes.count
-	}
-	
-	public init(bytes: ByteArray) {
-		self.bytes = bytes
-	}
-	
-	func readByte() -> Byte {
-		return bytes[index++]
-	}
-	
-	func readBytes(length length: Int) -> ArraySlice<Byte> {
-		let slice = bytes[index..<(index+length)]
-		index += length
-		return slice
-	}
-	
+    
+    private let bytes: ByteArray
+    private var index: Int = 0
+    
+    var hasBytesAvailable: Bool {
+        return index < bytes.count
+    }
+    
+    public init(bytes: ByteArray) {
+        self.bytes = bytes
+    }
+    
+    func readByte() -> Byte {
+        return bytes[index++]
+    }
+    
+    func readBytes(length length: Int) -> ArraySlice<Byte> {
+        let slice = bytes[index..<(index+length)]
+        index += length
+        return slice
+    }
+    
 }
