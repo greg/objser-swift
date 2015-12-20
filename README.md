@@ -142,7 +142,23 @@ extension CGPoint: Mappable {
 
 ### Collections of protocol type
 
-It is not currently possible to correctly deserialise collections of non-concrete types. This functionality will be added soon.
+To serialise a collection of protocol type, each object in the collection must be saved along with a unique type identifier. Override the static variable `typeUniqueIdentifier` in each type you need to serialise in such a collection to return a unique value:
+
+```swift
+extension Int {
+    static var typeUniqueIdentifier: String? {
+        return "Int"
+    }
+}
+```
+
+To successfully deserialise a collection of protocol type, pass an array of the types that may occur in the collection to the deserialiser:
+
+```swift
+let array: [Serialisable] = try Deserialiser.deserialiseFrom(stream, identifiableTypes: [Int.self, Float.self])
+```
+
+Note: `typeUniqueIdentifier` is defined in the `Serialisable` protocol. All protocol types must conform to the `Serialisable` protocol in order to be serialised.
 
 ## Implementation notes
 

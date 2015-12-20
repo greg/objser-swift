@@ -39,6 +39,7 @@ public protocol Serialisable {
     var serialisingValue: Serialising { get }
     
     /// The identifier stored with instances of the type to aid with resolving ambiguity in deserialisation (e.g. collections of protocol type).
+    /// - Note: This identifier must be _unique_ amongst all types being (de)serialised. If your type is generic, this identifier should be different for each specialisation (e.g. by including the type parameter's name in the identifier).
     static var typeUniqueIdentifier: String? { get }
     
 }
