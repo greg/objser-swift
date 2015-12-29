@@ -46,7 +46,7 @@ public protocol Mapper {
 
 extension Mappable {
     
-    static func createForDeserialising() -> Serialisable /* Self */ {
+    public static func createForDeserialising() -> Serialisable /* Self */ {
         return self.createForMapping()
     }
     
