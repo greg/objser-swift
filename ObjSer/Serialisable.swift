@@ -56,10 +56,11 @@ extension Serialisable {
 /// - Warning: If a cycle containing an object conforming to this protocol is encountered, deserialisation will fail.
 public protocol AcyclicSerialisable: Serialisable {
     
+    // Inexact return type is a workaround for compiler error when adding conformance in a protocol extension: Method 'createForDeserialising()' in non-final class must return `Self` to conform to protocol 'AcyclicSerialisable'
     /// Initialise an instance of `self` from the given serialised value.
     /// - Remarks: This is a workaround for the impossibility of implementing initialisers as extensions on non-final classes.
     /// - Note: If you are able to implement a required initialiser on your type, conform to `InitableSerialisable` instead.
-    static func createByDeserialising(value: Deserialising) throws -> Self
+    static func createByDeserialising(value: Deserialising) throws -> AcyclicSerialisable /* Self */
     
 }
 
@@ -89,7 +90,7 @@ extension AcyclicSerialisable {
 extension InitableSerialisable {
     
     @transparent
-    public static func createByDeserialising(value: Deserialising) throws -> Self {
+    public static func createByDeserialising(value: Deserialising) throws -> AcyclicSerialisable {
         return try self.init(deserialising: value)
     }
     

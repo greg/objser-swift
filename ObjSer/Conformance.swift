@@ -102,7 +102,7 @@ extension String: InitableSerialisable {
 
 extension NSData: AcyclicSerialisable {
     
-    public static func createByDeserialising(value: Deserialising) throws -> Self {
+    public static func createByDeserialising(value: Deserialising) throws -> AcyclicSerialisable {
         let bytes = try value.dataValue()
         return bytes.withUnsafeBufferPointer { buf in
             return self.init(bytes: buf.baseAddress, length: bytes.count)
