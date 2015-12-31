@@ -137,6 +137,10 @@ public struct Serialising: NilLiteralConvertible {
             return .Array(a)
         })
     }
+
+    public init<S : SequenceType where S.Generator.Element : Serialisable>(array seq: S, typeIdentified: Bool = false) {
+        self.init(array: seq.lazy.map { $0 as Serialisable }, typeIdentified: typeIdentified)
+    }
     
     public init<S : SequenceType where S.Generator.Element == (Serialisable, Serialisable)>(map seq: S, typeIdentifiedKeys: Bool = false, typeIdentifiedValues: Bool = false) {
         state = .Convertible({ serialise in
@@ -148,6 +152,10 @@ public struct Serialising: NilLiteralConvertible {
             }
             return .Map(a)
         })
+    }
+
+    public init<S : SequenceType, K : Serialisable, V : Serialisable where S.Generator.Element == (K, V)>(map seq: S, typeIdentifiedKeys: Bool = false, typeIdentifiedValues: Bool = false) {
+        self.init(map: seq.map { ($0.0 as Serialisable, $0.1 as Serialisable) }, typeIdentifiedKeys: typeIdentifiedKeys, typeIdentifiedValues: typeIdentifiedValues)
     }
     
     public init(serialising value: Serialisable, typeIdentified: Bool = false) {
