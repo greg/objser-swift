@@ -104,8 +104,8 @@ public struct Serialising: NilLiteralConvertible {
     }
     private let state: State
     
-    public init<T : AnyInteger>(integer: T) {
-        state = .Converted(.Integer(integer))
+    public init<T : IntegralType>(integer: T) {
+        state = .Converted(.Integer(AnyInteger(integer)))
     }
     
     public init(nilLiteral: ()) {
@@ -116,8 +116,8 @@ public struct Serialising: NilLiteralConvertible {
         state = .Converted(.Boolean(boolean))
     }
     
-    public init<T : AnyFloat>(float: T) {
-        state = .Converted(.Float(float))
+    public init<T : FloatType>(float: T) {
+        state = .Converted(.Float(AnyFloat(float)))
     }
     
     public init(string: String) {
@@ -191,9 +191,9 @@ public struct Deserialising {
         self.deserialiser = deserialiser
     }
     
-    public func integerValue<R : AnyInteger>() throws -> R {
+    public func integerValue<R : IntegralType>() throws -> R {
         if case .Integer(let v) = primitive {
-            if let v: R = v.convert() {
+            if let v = R(convert: v) {
                 return v
             }
             throw DeserialiseError.ConversionFailed(v)
@@ -215,9 +215,9 @@ public struct Deserialising {
         throw DeserialiseError.IncorrectType(self)
     }
     
-    public func floatValue<R: AnyFloat>() throws -> R {
+    public func floatValue<R: FloatType>() throws -> R {
         if case .Float(let v) = primitive {
-            return v.convert()
+            return R(v)
         }
         throw DeserialiseError.IncorrectType(self)
     }

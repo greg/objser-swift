@@ -1,5 +1,5 @@
 //
-//  NumericType.swift
+//  NumericType-Bytes.swift
 //  ObjSer
 //
 //  The MIT License (MIT)
@@ -25,6 +25,34 @@
 //  SOFTWARE.
 //
 
-public protocol NumericType {
+import CoreFoundation
 
+public typealias Byte = UInt8
+public typealias ByteArray = ContiguousArray<Byte>
+
+private var isLittleEndian: Bool {
+    return __CFByteOrder(UInt32(CFByteOrderGetCurrent())) == CFByteOrderLittleEndian
+}
+
+extension NumericType {
+    
+    /// The bytes of the number, in little-endian order
+    var bytes: ByteArray {
+        var v = self
+        let b = withUnsafePointer(&v) {
+            ByteArray(UnsafeBufferPointer<Byte>(start: UnsafePointer<Byte>($0), count: sizeofValue(v)))
+        }
+        return isLittleEndian ? b : ByteArray(b.reverse())
+    }
+    
+    /// Initialises the number from bytes given in little-endian order
+    init(bytes: ByteArray) {
+        func bcast<T>(v: ByteArray) -> T {
+            return bytes.withUnsafeBufferPointer {
+                UnsafePointer<T>($0.baseAddress).memory
+            }
+        }
+        self = bcast(isLittleEndian ? bytes : ByteArray(bytes.reverse()))
+    }
+    
 }

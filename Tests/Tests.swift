@@ -129,7 +129,7 @@ class Tests: XCTestCase {
             Primitive.Integer(152352050802),
             Primitive.String("aoeu"),
             Primitive.Data([]),
-            Primitive.Float(3.14159265358979323846),
+            Primitive.Float(AnyFloat(3.14159265358979323846)),
             Primitive.Data([4, 255]),
             Primitive.Map([]),
             Primitive.Integer(-1),

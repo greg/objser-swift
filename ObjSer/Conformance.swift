@@ -33,7 +33,7 @@
     import CoreGraphics
 #endif
 
-extension AnyInteger where Self: InitableSerialisable {
+extension IntegralType where Self: InitableSerialisable {
     
     public init(deserialising value: Deserialising) throws {
         self = try value.integerValue()
@@ -70,7 +70,7 @@ extension Bool: InitableSerialisable {
 }
 
 
-extension AnyFloat where Self: InitableSerialisable {
+extension FloatType where Self: InitableSerialisable {
     
     public init(deserialising value: Deserialising) throws {
         self = try value.floatValue()
