@@ -30,9 +30,22 @@ public enum DeserialiseError: ErrorType {
     case EmptyInput
     case IncorrectType(Any)
     case ConversionFailed(Any)
-    case MapFailed(type: Mappable.Type, key: String)
     case UnidentifiableType(Serialisable.Type)
     case UnknownTypeID(String)
     case IdentifiableTypeMismatch(type: Serialisable.Type, shouldConformTo: Serialisable.Type)
+    
+}
+
+public final class ObjSer {
+
+    public class func serialise<T : Serialisable>(v: T, to stream: OutputStream) {
+        let s = Serialiser()
+        s.serialiseRoot(v)
+        s.writeTo(stream)
+    }
+
+    public class func deserialiseFrom<R : Serialisable>(stream: InputStream, identifiableTypes: [Serialisable.Type] = []) throws -> R {
+        return try Deserialiser(readFrom: stream, identifiableTypes: identifiableTypes).deserialiseRoot()
+    }
     
 }

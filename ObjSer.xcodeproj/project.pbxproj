@@ -14,7 +14,6 @@
 		37712A131C1C747000169D1C /* Serialisable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0B1C1C747000169D1C /* Serialisable.swift */; };
 		37712A141C1C747000169D1C /* Conformance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0C1C1C747000169D1C /* Conformance.swift */; };
 		37712A151C1C747000169D1C /* Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0D1C1C747000169D1C /* Format.swift */; };
-		37712A161C1C747000169D1C /* Mappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0E1C1C747000169D1C /* Mappable.swift */; };
 		37712A171C1C747000169D1C /* Deserialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0F1C1C747000169D1C /* Deserialiser.swift */; };
 		37712A1C1C1C747700169D1C /* DictionaryInit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A191C1C747700169D1C /* DictionaryInit.swift */; };
 		37712A1D1C1C747700169D1C /* IO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A1A1C1C747700169D1C /* IO.swift */; };
@@ -23,7 +22,6 @@
 		37712A221C1C74A300169D1C /* Serialisable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0B1C1C747000169D1C /* Serialisable.swift */; };
 		37712A231C1C74A300169D1C /* Conformance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0C1C1C747000169D1C /* Conformance.swift */; };
 		37712A241C1C74A300169D1C /* Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0D1C1C747000169D1C /* Format.swift */; };
-		37712A251C1C74A300169D1C /* Mappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0E1C1C747000169D1C /* Mappable.swift */; };
 		37712A261C1C74A300169D1C /* Deserialiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A0F1C1C747000169D1C /* Deserialiser.swift */; };
 		37712A271C1C74A300169D1C /* DictionaryInit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A191C1C747700169D1C /* DictionaryInit.swift */; };
 		37712A281C1C74A300169D1C /* IO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A1A1C1C747700169D1C /* IO.swift */; };
@@ -73,7 +71,6 @@
 		37712A0B1C1C747000169D1C /* Serialisable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Serialisable.swift; sourceTree = "<group>"; };
 		37712A0C1C1C747000169D1C /* Conformance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Conformance.swift; sourceTree = "<group>"; };
 		37712A0D1C1C747000169D1C /* Format.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Format.swift; sourceTree = "<group>"; };
-		37712A0E1C1C747000169D1C /* Mappable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mappable.swift; sourceTree = "<group>"; };
 		37712A0F1C1C747000169D1C /* Deserialiser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Deserialiser.swift; sourceTree = "<group>"; };
 		37712A191C1C747700169D1C /* DictionaryInit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DictionaryInit.swift; sourceTree = "<group>"; };
 		37712A1A1C1C747700169D1C /* IO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IO.swift; sourceTree = "<group>"; };
@@ -152,7 +149,6 @@
 				37712A061C1C729D00169D1C /* Info-iOS.plist */,
 				37712A081C1C747000169D1C /* ObjSer.swift */,
 				37712A0B1C1C747000169D1C /* Serialisable.swift */,
-				37712A0E1C1C747000169D1C /* Mappable.swift */,
 				37712A091C1C747000169D1C /* Serialiser.swift */,
 				37712A0F1C1C747000169D1C /* Deserialiser.swift */,
 				37C20DE51C1EE04F006DB788 /* Primitive.swift */,
@@ -371,7 +367,6 @@
 				37712A171C1C747000169D1C /* Deserialiser.swift in Sources */,
 				377C0C861C3AA1BF00B1840F /* NumericType-Bytes.swift in Sources */,
 				377C0C881C3AA1BF00B1840F /* IntegralType.swift in Sources */,
-				37712A161C1C747000169D1C /* Mappable.swift in Sources */,
 				37712A151C1C747000169D1C /* Format.swift in Sources */,
 				37712A131C1C747000169D1C /* Serialisable.swift in Sources */,
 				37C20DE61C1EE04F006DB788 /* Primitive.swift in Sources */,
@@ -393,7 +388,6 @@
 				37712A261C1C74A300169D1C /* Deserialiser.swift in Sources */,
 				377C0C871C3AA1BF00B1840F /* NumericType-Bytes.swift in Sources */,
 				377C0C891C3AA1BF00B1840F /* IntegralType.swift in Sources */,
-				37712A251C1C74A300169D1C /* Mappable.swift in Sources */,
 				37C20DE71C1F21AD006DB788 /* Primitive.swift in Sources */,
 				37712A241C1C74A300169D1C /* Format.swift in Sources */,
 				37712A221C1C74A300169D1C /* Serialisable.swift in Sources */,
