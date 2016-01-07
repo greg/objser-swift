@@ -43,7 +43,8 @@ public final class Serialiser {
     private var indexing = true
 
     /// Serialise `v` for `key` in the object.
-    public func serialise<T : Serialisable>(v: T, forKey key: String) {
+    /// - Requires: `T : Serialisable`
+    public func serialise<T>(unconstrained v: T, forKey key: String) {
         let i = indexStack.count - 1
         var dict: ContiguousArray<Primitive>
         switch indexStack[i] {
@@ -57,6 +58,11 @@ public final class Serialiser {
         dict.append(indexAndPromise(key))
         dict.append(indexAndPromise(v))
         indexStack[i] = .Mapping(dict)
+    }
+
+    /// Serialise `v` for `key` in the object.
+    public func serialise<T : Serialisable>(v: T, forKey key: String) {
+        serialise(unconstrained: v, forKey: key)
     }
 
     private func setSoleValue(v: Primitive) {
