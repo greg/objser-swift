@@ -134,8 +134,9 @@ public final class Deserialiser {
 extension Deserialiser {
 
     /// Return a value of type `R` for `key`, or `nil` if the value does not exist.
+    /// - Requires: `R : Serialisable`
     @warn_unused_result
-    public func deserialiseKey<R : Serialisable>(key: String) throws -> R? {
+    public func deserialiseKeyUnconstrained<R>(key: String) throws -> R? {
         let map: [String : Primitive]
         switch currentState {
         case .Unknown:
@@ -158,6 +159,12 @@ extension Deserialiser {
         
         guard let v = map[key] else { return nil }
         return try deserialise(primitive: v) as R
+    }
+
+    /// Return a value of type `R` for `key`, or `nil` if the value does not exist.
+    @warn_unused_result
+    public func deserialiseKey<R : Serialisable>(key: String) throws -> R? {
+        return try deserialiseKeyUnconstrained(key)
     }
 
     @warn_unused_result
