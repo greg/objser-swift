@@ -47,7 +47,7 @@ extension NumericType {
     
     /// Initialises the number from bytes given in little-endian order
     init(bytes: ByteArray) {
-        func bcast<T>(v: ByteArray) -> T {
+        func bcast<T>(bytes: ByteArray) -> T {
             return bytes.withUnsafeBufferPointer {
                 UnsafePointer<T>($0.baseAddress).memory
             }
