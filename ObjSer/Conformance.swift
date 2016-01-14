@@ -33,16 +33,16 @@
     import CoreGraphics
 #endif
 
-extension AnyInteger where Self: InitableSerialisable {
-    
-    public init(deserialising value: Deserialising) throws {
-        self = try value.integerValue()
+extension IntegralType where Self: InitableSerialisable {
+
+    public init(deserialiser des: Deserialiser) throws {
+        self = try des.deserialiseInteger()
     }
-    
-    public var serialisingValue: Serialising {
-        return Serialising(integer: self)
+
+    public func serialiseWith(ser: Serialiser) {
+        ser.serialise(integer: self)
     }
-    
+
 }
 
 extension Int8: InitableSerialisable { }
@@ -58,28 +58,28 @@ extension UInt: InitableSerialisable { }
 
 
 extension Bool: InitableSerialisable {
-    
-    public init(deserialising value: Deserialising) throws {
-        self = try value.booleanValue()
+
+    public init(deserialiser des: Deserialiser) throws {
+        self = try des.deserialiseBool()
     }
-    
-    public var serialisingValue: Serialising {
-        return Serialising(boolean: self)
+
+    public func serialiseWith(ser: Serialiser) {
+        ser.serialise(boolean: self)
     }
-    
+
 }
 
 
-extension AnyFloat where Self: InitableSerialisable {
-    
-    public init(deserialising value: Deserialising) throws {
-        self = try value.floatValue()
+extension FloatType where Self: InitableSerialisable {
+
+    public init(deserialiser des: Deserialiser) throws {
+        self = try des.deserialiseFloat()
     }
-    
-    public var serialisingValue: Serialising {
-        return Serialising(float: self)
+
+    public func serialiseWith(ser: Serialiser) {
+        ser.serialise(float: self)
     }
-    
+
 }
 
 extension Float32: InitableSerialisable { }
@@ -88,102 +88,57 @@ extension CGFloat: InitableSerialisable { }
 
 
 extension String: InitableSerialisable {
-    
-    public init(deserialising value: Deserialising) throws {
-        self = try value.stringValue()
+
+    public init(deserialiser des: Deserialiser) throws {
+        self = try des.deserialiseString()
     }
     
-    public var serialisingValue: Serialising {
-        return Serialising(string: self)
+    public func serialiseWith(ser: Serialiser) {
+        ser.serialise(string: self)
     }
-    
+
 }
 
 
 extension NSData: AcyclicSerialisable {
-    
-    public static func createByDeserialising(value: Deserialising) throws -> Self {
-        let bytes = try value.dataValue()
+
+    public static func createByDeserialisingWith(des: Deserialiser) throws -> AcyclicSerialisable {
+        let bytes = try des.deserialiseData()
         return bytes.withUnsafeBufferPointer { buf in
             return self.init(bytes: buf.baseAddress, length: bytes.count)
         }
     }
-    
-    public var serialisingValue: Serialising {
+
+    public func serialiseWith(ser: Serialiser) {
         var bytes = ByteArray(count: length, repeatedValue: 0)
         bytes.withUnsafeMutableBufferPointer { (inout buf: UnsafeMutableBufferPointer<Byte>) in
             self.getBytes(buf.baseAddress, length: length)
         }
-        return Serialising(data: bytes)
+        ser.serialise(data: bytes)
     }
     
 }
 
 extension Array: InitableSerialisable {
-    
-    public init(deserialising value: Deserialising) throws {
-        self = Array(try value.unconstrainedArrayValue())
+
+    public init(deserialiser des: Deserialiser) throws {
+        self = Array(try des.deserialiseArrayUnconstrained())
     }
-    
-    public var serialisingValue: Serialising {
-        let concrete = Element.self is Serialisable.Type
-        precondition(concrete || reduce(true, combine: { $0 && $1 is Serialisable }), "Array element type \(Element.self) does not conform to Serialisable.")
-        return Serialising(array: lazy.map { $0 as! Serialisable }, typeIdentified: !concrete)
+
+    public func serialiseWith(ser: Serialiser) {
+        ser.serialise(unconstrainedArray: lazy)
     }
     
 }
 
 extension Dictionary: InitableSerialisable {
-    
-    public init(deserialising value: Deserialising) throws {
-        self = Dictionary(sequence: try value.unconstrainedMapValue())
-    }
-    
-    public var serialisingValue: Serialising {
-        let concreteKeys = Key.self is Serialisable.Type
-        let concreteValues = Value.self is Serialisable.Type
-        precondition(concreteKeys || reduce(true, combine: { $0 && $1.0 is Serialisable }), "Dictionary key type \(Key.self) does not conform to Serialisable.")
-        precondition(concreteValues || reduce(true, combine: { $0 && $1.1 is Serialisable }), "Dictionary value type \(Value.self) does not conform to Serialisable.")
-        return Serialising(map: self.lazy.map { ($0.0 as! Serialisable, $0.1 as! Serialisable) }, typeIdentifiedKeys: !concreteKeys, typeIdentifiedValues: !concreteValues)
-    }
-    
-}
 
-extension Optional: InitableSerialisable {
-    
-    public init(deserialising value: Deserialising) throws {
-        do {
-            try value.nilValue()
-            self = nil
-        }
-        catch {
-            self = try value.unconstrainedObjectValue() as Wrapped
-        }
+    public init(deserialiser des: Deserialiser) throws {
+        self = Dictionary(sequence: try des.deserialiseMapUnconstrained())
     }
-    
-    public var serialisingValue: Serialising {
-        let concrete = Wrapped.self is Serialisable.Type
-        precondition(concrete || self == nil || self! is Serialisable, "Wrapped type \(self.dynamicType) does not conform to Serialisable.")
-        if let w = self {
-            return Serialising(serialising: w as! Serialisable, typeIdentified: !concrete)
-        }
-        return nil
-    }
-    
-}
 
-/// Workaround to allow identifying any implicitly unwrapped optional, regardless of generic type.
-protocol ImplicitlyUnwrappedOptionalType { }
-extension ImplicitlyUnwrappedOptional: ImplicitlyUnwrappedOptionalType { }
+    public func serialiseWith(ser: Serialiser) {
+        ser.serialise(unconstrainedMap: lazy)
+    }
 
-extension ImplicitlyUnwrappedOptional: InitableSerialisable {
-    
-    public init(deserialising value: Deserialising) throws {
-        self = try Optional<Wrapped>(deserialising: value)
-    }
-    
-    public var serialisingValue: Serialising {
-        return (self as Optional<Wrapped>).serialisingValue
-    }
-    
 }

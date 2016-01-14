@@ -1,5 +1,5 @@
 //
-//  PairSequence.swift
+//  ObjSer.swift
 //  ObjSer
 //
 //  The MIT License (MIT)
@@ -25,34 +25,27 @@
 //  SOFTWARE.
 //
 
-struct PairSequenceGenerator<T>: GeneratorType {
+public enum DeserialiseError: ErrorType {
     
-    typealias Element = (T, T)
-    private var generator: AnyGenerator<T>
-    
-    mutating func next() -> (T, T)? {
-        guard let a = generator.next(), let b = generator.next() else { return nil }
-        return (a, b)
-    }
+    case EmptyInput
+    case IncorrectType(Any)
+    case ConversionFailed(Any)
+    case UnidentifiableType(Serialisable.Type)
+    case UnknownTypeID(String)
+    case IdentifiableTypeMismatch(type: Serialisable.Type, shouldConformTo: Serialisable.Type)
     
 }
 
-struct PairSequence<Element>: SequenceType {
-    
-    private let sequence: AnySequence<Element>
-    
-    init<S : SequenceType where S.Generator.Element == Element, S.SubSequence : SequenceType, S.SubSequence.Generator.Element == Element, S.SubSequence.SubSequence == S.SubSequence>(_ seq: S) {
-        sequence = AnySequence(seq)
+public final class ObjSer {
+
+    public class func serialise<T : Serialisable>(v: T, to stream: OutputStream) {
+        let s = Serialiser()
+        s.serialiseRoot(v)
+        s.writeTo(stream)
     }
-    
-    typealias Generator = PairSequenceGenerator<Element>
-    
-    func generate() -> PairSequenceGenerator<Element> {
-        return PairSequenceGenerator(generator: sequence.generate())
-    }
-    
-    func underestimateCount() -> Int {
-        return sequence.underestimateCount() / 2
+
+    public class func deserialiseFrom<R : Serialisable>(stream: InputStream, identifiableTypes: [Serialisable.Type] = []) throws -> R {
+        return try Deserialiser(readFrom: stream, identifiableTypes: identifiableTypes).deserialiseRoot()
     }
     
 }

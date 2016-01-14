@@ -80,7 +80,7 @@ extension Primitive {
             }
             
         case .Integer(let v):
-            if let v = v.int8Value {
+            if let v = Int8(convert: v) {
                 switch v {
                 case 0...0b0011_1111:
                     stream.write(Format.PosInt6.byte | Byte(v))
@@ -90,13 +90,13 @@ extension Primitive {
                     stream.write(Format.Int8.byte, Byte(bitPattern: v))
                 }
             }
-            else if let v = v.uint8Value { stream.write(Format.UInt8.byte, v) }
-            else if let v = v.int16Value { stream.write(Format.Int16.byte, v.bytes) }
-            else if let v = v.uint16Value { stream.write(Format.UInt16.byte, v.bytes) }
-            else if let v = v.int32Value { stream.write(Format.Int32.byte, v.bytes) }
-            else if let v = v.uint32Value { stream.write(Format.UInt32.byte, v.bytes) }
-            else if let v = v.int64Value { stream.write(Format.Int64.byte, v.bytes) }
-            else if let v = v.uint64Value { stream.write(Format.UInt64.byte, v.bytes) }
+            else if let v = UInt8(convert: v) { stream.write(Format.UInt8.byte, v) }
+            else if let v = Int16(convert: v) { stream.write(Format.Int16.byte, v.bytes) }
+            else if let v = UInt16(convert: v) { stream.write(Format.UInt16.byte, v.bytes) }
+            else if let v = Int32(convert: v) { stream.write(Format.Int32.byte, v.bytes) }
+            else if let v = UInt32(convert: v) { stream.write(Format.UInt32.byte, v.bytes) }
+            else if let v = Int64(convert: v) { stream.write(Format.Int64.byte, v.bytes) }
+            else if let v = UInt64(convert: v) { stream.write(Format.UInt64.byte, v.bytes) }
             
         case .Nil:
             stream.write(Format.Nil.byte)
@@ -105,10 +105,9 @@ extension Primitive {
             stream.write(v ? Format.True.byte : Format.False.byte)
             
         case .Float(let v):
-            if let v = v as? Float32 { stream.write(Format.Float32.byte, v.bytes) }
-            else if let v = v as? Float64 { stream.write(Format.Float64.byte, v.bytes) }
-            else { preconditionFailure("Could not format unsupported float type \(v.dynamicType).") }
-            
+            if let v = v.exactFloat32Value { stream.write(Format.Float32.byte, v.bytes) }
+            else { stream.write(Format.Float64.byte, Float64(v).bytes) }
+
         case .String(let v):
             switch v.utf8.count {
             case 0:
@@ -218,9 +217,9 @@ extension Primitive {
             self = .Reference(UInt32(bytes: stream.readByteArray(length: 4)))
             
         case Format.PosInt6.range:
-            self = .Integer(v & 0b0011_1111)
+            self = .Integer(AnyInteger(v & 0b0011_1111))
         case Format.NegInt5.range:
-            self = .Integer(Int8(bitPattern: v))
+            self = .Integer(AnyInteger(Int8(bitPattern: v)))
             
         case Format.False.byte:
             self = .Boolean(false)
@@ -231,26 +230,26 @@ extension Primitive {
             self = .Nil
             
         case Format.Int8.byte:
-            self = .Integer(Int8(bitPattern: stream.readByte()))
+            self = .Integer(AnyInteger(Int8(bitPattern: stream.readByte())))
         case Format.Int16.byte:
-            self = .Integer(Int16(bytes: stream.readByteArray(length: 2)))
+            self = .Integer(AnyInteger(Int16(bytes: stream.readByteArray(length: 2))))
         case Format.Int32.byte:
-            self = .Integer(Int32(bytes: stream.readByteArray(length: 4)))
+            self = .Integer(AnyInteger(Int32(bytes: stream.readByteArray(length: 4))))
         case Format.Int64.byte:
-            self = .Integer(Int64(bytes: stream.readByteArray(length: 8)))
+            self = .Integer(AnyInteger(Int64(bytes: stream.readByteArray(length: 8))))
         case Format.UInt8.byte:
-            self = .Integer(UInt8(stream.readByte()))
+            self = .Integer(AnyInteger(UInt8(stream.readByte())))
         case Format.UInt16.byte:
-            self = .Integer(UInt16(bytes: stream.readByteArray(length: 2)))
+            self = .Integer(AnyInteger(UInt16(bytes: stream.readByteArray(length: 2))))
         case Format.UInt32.byte:
-            self = .Integer(UInt32(bytes: stream.readByteArray(length: 4)))
+            self = .Integer(AnyInteger(UInt32(bytes: stream.readByteArray(length: 4))))
         case Format.UInt64.byte:
-            self = .Integer(UInt64(bytes: stream.readByteArray(length: 8)))
+            self = .Integer(AnyInteger(UInt64(bytes: stream.readByteArray(length: 8))))
             
         case Format.Float32.byte:
-            self = .Float(Float32(bytes: stream.readByteArray(length: 4)))
+            self = .Float(AnyFloat(Float32(bytes: stream.readByteArray(length: 4))))
         case Format.Float64.byte:
-            self = .Float(Float64(bytes: stream.readByteArray(length: 8)))
+            self = .Float(AnyFloat(Float64(bytes: stream.readByteArray(length: 8))))
             
         case Format.FString.range:
             var b = stream.readByteArray(length: Int(v) & 0b1111)

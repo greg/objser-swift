@@ -1,5 +1,5 @@
 //
-//  ObjSer.swift
+//  NumericType-Bytes.swift
 //  ObjSer
 //
 //  The MIT License (MIT)
@@ -25,14 +25,34 @@
 //  SOFTWARE.
 //
 
-public enum DeserialiseError: ErrorType {
+import CoreFoundation
+
+public typealias Byte = UInt8
+public typealias ByteArray = ContiguousArray<Byte>
+
+private var isLittleEndian: Bool {
+    return __CFByteOrder(UInt32(CFByteOrderGetCurrent())) == CFByteOrderLittleEndian
+}
+
+extension NumericType {
     
-    case EmptyInput
-    case IncorrectType(Any)
-    case ConversionFailed(Any)
-    case MapFailed(type: Mappable.Type, key: String)
-    case UnidentifiableType(Serialisable.Type)
-    case UnknownTypeID(String)
-    case IdentifiableTypeMismatch(type: Serialisable.Type, shouldConformTo: Serialisable.Type)
+    /// The bytes of the number, in little-endian order
+    var bytes: ByteArray {
+        var v = self
+        let b = withUnsafePointer(&v) {
+            ByteArray(UnsafeBufferPointer<Byte>(start: UnsafePointer<Byte>($0), count: sizeofValue(v)))
+        }
+        return isLittleEndian ? b : ByteArray(b.reverse())
+    }
+    
+    /// Initialises the number from bytes given in little-endian order
+    init(bytes: ByteArray) {
+        func bcast<T>(bytes: ByteArray) -> T {
+            return bytes.withUnsafeBufferPointer {
+                UnsafePointer<T>($0.baseAddress).memory
+            }
+        }
+        self = bcast(isLittleEndian ? bytes : ByteArray(bytes.reverse()))
+    }
     
 }

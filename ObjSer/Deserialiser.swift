@@ -25,23 +25,34 @@
 //  SOFTWARE.
 //
 
-public final class Deserialiser {
-    
-    @warn_unused_result
-    public class func deserialiseFrom<R : Serialisable>(stream: InputStream, identifiableTypes: [Serialisable.Type] = []) throws -> R {
-        let des = try self.init(readFrom: stream, identifiableTypes: identifiableTypes)
-        return try des.deserialiseRoot()
+/// Throws `error` if `condition` evaluates to false.
+private func require(@autoclosure condition: () -> Bool, @autoclosure _ error: () -> ErrorType) throws {
+    guard condition() else {
+        throw error()
     }
-    
+}
+
+public final class Deserialiser {
+
+    private var identifiableTypes = [String : Serialisable.Type]()
+
     private var primitives = ContiguousArray<Primitive>()
     private var deserialised = ContiguousArray<Serialisable?>()
-    private var identifiableTypes = [String : Serialisable.Type]()
-    
-    private init(readFrom stream: InputStream, identifiableTypes: [Serialisable.Type]) throws {
-        forwarder = PrimitiveDeserialiserForwarder(deserialiser: self)
+
+    private enum State {
+        case Unknown, Completed
+        case Mapping([String : Primitive])
+    }
+
+    private var deserialisingStack = ContiguousArray<(primitive: Primitive, state: State)>()
+
+    init(readFrom stream: InputStream, identifiableTypes: [Serialisable.Type]) throws {
         while stream.hasBytesAvailable {
             primitives.append(try Primitive(readFrom: stream))
         }
+
+        try require(primitives.count > 0, DeserialiseError.EmptyInput)
+
         deserialised = ContiguousArray(count: primitives.count, repeatedValue: nil)
         
         for t in identifiableTypes {
@@ -52,113 +63,186 @@ public final class Deserialiser {
             self.identifiableTypes[id] = t
         }
     }
-    
+
+    /// Return the current primitive.
+    /// - Requires: `currentState == .Unkown`, i.e. the primitive has not been consumed either as a sole value or for mapping.
+    private var currentPrimitive: Primitive {
+        guard case .Unknown = currentState else {
+            preconditionFailure("Cannot deserialise a value that has already been deserialised.")
+        }
+        return deserialisingStack.last!.primitive
+    }
+
+    private var currentState: State {
+        get { return deserialisingStack.last!.state }
+        set { deserialisingStack[deserialisingStack.count-1].state = newValue }
+    }
+
     // MARK: Conversion
-    
+
+    private var errorToThrow: ErrorType?
+
     @warn_unused_result
-    private func deserialiseRoot<R : Serialisable>() throws -> R {
-        guard primitives.count > 0 else { throw DeserialiseError.EmptyInput }
-        return try deserialiseIndex(primitives.count - 1)
+    func deserialiseRoot<R : Serialisable>() throws -> R {
+        return try deserialise(index: primitives.count - 1)
     }
-    
+
     @warn_unused_result
-    private func unconstrainedDeserialiseIndex<_R>(i: Int, var type R: Any.Type = _R.self) throws -> _R {
-        if let v = deserialised[i] {
-            return v as! _R
-        }
-        let primitive: Primitive
-        if case .TypeIdentified(let id, let p) = primitives[i] {
-            let id = try deserialise(id) as String
-            guard let type = identifiableTypes[id] else {
-                throw DeserialiseError.UnknownTypeID(id)
+    private func deserialise<R /*: Serialisable*/>(index index: Int? = nil, primitive: Primitive? = nil, overrideType O: Any.Type = R.self) throws -> R {
+        assert((index != nil) || (primitive != nil), "Index or primitive must be provided.")
+
+        // if top-level and already deserialised, return value
+        if let i = index, v = deserialised[i] { return v as! R }
+
+        // get actual required output type and wrapped primitive, if necessary
+        let (primitive, O) = try { () -> (Primitive, Any.Type) in
+            var primitive = primitive ?? self.primitives[index!], O = O
+            while case .TypeIdentified(let id, let p) = primitive {
+                let id = try deserialise(primitive: id) as String
+                guard let type = identifiableTypes[id] else { throw DeserialiseError.UnknownTypeID(id) }
+                O = type; primitive = p
             }
-            R = type
-            primitive = p
-        }
-        else {
-            primitive = primitives[i]
-        }
-        guard let R = R.self as? Serialisable.Type else {
-            preconditionFailure("Could not decode object: \(_R.self) does not conform to Serialisable.")
-        }
-        if R is AcyclicSerialisable.Type {
-            let r = try unconstrainedDeserialise(primitive, type: R) as _R
-            deserialised[i] = (r as! Serialisable)
-            return r
-        }
-        else {
-            let r = R.createForDeserialising() as! _R
-            deserialised[i] = (r as! Serialisable)
-            return try unconstrainedDeserialise(primitive, forObject: r, type: R)
-        }
-    }
-    
-    @warn_unused_result
-    private func deserialiseIndex<R : Serialisable>(i: Int) throws -> R {
-        return try unconstrainedDeserialiseIndex(i)
-    }
-    
-    /// Unconstrained `deserialise` implementation.
-    /// Used for decoding arrays and dictionaries whose conformance to `Serialisable` can't be specialised.
-    /// - Requires: `_R : Serialisable`. A runtime error will be raised otherwise.
-    @warn_unused_result
-    private func unconstrainedDeserialise<_R>(primitive: Primitive, forObject object: _R? = nil, type R: Any.Type = _R.self) throws -> _R {
-        if case .TypeIdentified(let id, let p) = primitive {
-            let id = try deserialise(id) as String
-            guard let type = identifiableTypes[id] else {
-                throw DeserialiseError.UnknownTypeID(id)
-            }
-            return try unconstrainedDeserialise(p, type: type) as _R
-        }
-        
-        // Resolve references
+            return (primitive, O)
+        }()
+
+        // resolve references
         if case .Reference(let i) = primitive {
-            return try unconstrainedDeserialiseIndex(Int(i), type: R)
+            return try deserialise(index: Int(i), overrideType: O)
         }
-        
-        guard let _T = R.self as? Serialisable.Type else {
-            preconditionFailure("Could not decode object: \(R.self) does not conform to Serialisable.")
+
+        deserialisingStack.append((primitive, .Unknown))
+        defer { deserialisingStack.removeLast() }
+
+        if let O = O as? AcyclicSerialisable.Type {
+            let v = try O.createByDeserialisingWith(self)
+            if let i = index { deserialised[i] = v }
+            return v as! R
         }
-        let R = _T
-        
-        let des = Deserialising(primitive: primitive, deserialiser: forwarder)
-        
-        if let R = R as? AcyclicSerialisable.Type {
-            assert(object == nil, "Cannot use two-step deserialisation on type \(R) : AcyclicSerialisable.")
-            return try R.createByDeserialising(des) as! _R
-        }
-        
-        var obj: Serialisable
-        if let object = object {
-            obj = object as! Serialisable
+        else if let O = O as? Serialisable.Type {
+            var v = O.createForDeserialising()
+            if let i = index { deserialised[i] = v }
+            try v.deserialiseWith(self)
+            return v as! R
         }
         else {
-            obj = R.createForDeserialising()
+            preconditionFailure("Could not decode object: \(O) does not conform to Serialisable.")
         }
-        try obj.deserialiseFrom(des)
-        return obj as! _R
     }
-    
+
+}
+
+extension Deserialiser {
+
+    /// Return a value of type `R` for `key`, or `nil` if the value does not exist.
+    /// - Requires: `R : Serialisable`
     @warn_unused_result
-    private func deserialise<R : Serialisable>(primitive: Primitive) throws -> R {
-        return try unconstrainedDeserialise(primitive)
-    }
-    
-    private var forwarder: PrimitiveDeserialiserForwarder!
-    
-    /// Private proxy struct to hide conformance to internal protocol
-    private struct PrimitiveDeserialiserForwarder: PrimitiveDeserialiser {
-        
-        weak var deserialiser: Deserialiser!
-        
-        func deserialise<R : Serialisable>(primitive: Primitive) throws -> R {
-            return try deserialiser.deserialise(primitive)
+    public func deserialiseKeyUnconstrained<R>(key: String) throws -> R? {
+        let map: [String : Primitive]
+        switch currentState {
+        case .Unknown:
+            // get a map out of the primitive
+            guard case .Map(let a) = currentPrimitive else {
+                throw DeserialiseError.IncorrectType(currentPrimitive)
+            }
+            map = try [String : Primitive](sequence: PairSequence(a).map {
+                (try deserialise(primitive: $0.0), $0.1)
+                })
+            // save the map to the current state
+            currentState = .Mapping(map)
+        case .Mapping(let m):
+            // there's already a map
+            map = m
+        case .Completed:
+            // object has already been deserialised as a whole value
+            preconditionFailure("Cannot perform keyed deserialisation for a value that has already been deserialised.")
         }
         
-        func unconstrainedDeserialise<_R>(primitive: Primitive) throws -> _R {
-            return try deserialiser.unconstrainedDeserialise(primitive)
-        }
-        
+        guard let v = map[key] else { return nil }
+        return try deserialise(primitive: v) as R
     }
-    
+
+    /// Return a value of type `R` for `key`, or `nil` if the value does not exist.
+    @warn_unused_result
+    public func deserialiseKey<R : Serialisable>(key: String) throws -> R? {
+        return try deserialiseKeyUnconstrained(key)
+    }
+
+    @warn_unused_result
+    public func deserialiseUnconstrained<R>() throws -> R {
+        return try deserialise(primitive: currentPrimitive)
+    }
+
+    @warn_unused_result
+    public func deserialise<R : Serialisable>() throws -> R {
+        return try deserialiseUnconstrained()
+    }
+
+    @warn_unused_result
+    public func deserialiseInteger<R : IntegralType>() throws -> R {
+        guard case .Integer(let i) = currentPrimitive else { throw DeserialiseError.IncorrectType(currentPrimitive) }
+        guard let v = R(convert: i) else { throw DeserialiseError.ConversionFailed(i) }
+        currentState = .Completed
+        return v
+    }
+
+    public func deserialiseNil() throws -> () {
+        guard case .Nil = currentPrimitive else { throw DeserialiseError.IncorrectType(currentPrimitive) }
+        currentState = .Completed
+        return ()
+    }
+
+    @warn_unused_result
+    public func deserialiseBool() throws -> Bool {
+        guard case .Boolean(let b) = currentPrimitive else { throw DeserialiseError.IncorrectType(currentPrimitive) }
+        currentState = .Completed
+        return b
+    }
+
+    @warn_unused_result
+    public func deserialiseFloat<R : FloatType>() throws -> R {
+        guard case .Float(let f) = currentPrimitive else { throw DeserialiseError.IncorrectType(currentPrimitive) }
+        currentState = .Completed
+        return R(f)
+    }
+
+    @warn_unused_result
+    public func deserialiseString() throws -> String {
+        guard case .String(let s) = currentPrimitive else { throw DeserialiseError.IncorrectType(currentPrimitive) }
+        currentState = .Completed
+        return s
+    }
+
+    @warn_unused_result
+    public func deserialiseData() throws -> ByteArray {
+        guard case .Data(let bytes) = currentPrimitive else { throw DeserialiseError.IncorrectType(currentPrimitive) }
+        currentState = .Completed
+        return bytes
+    }
+
+    @warn_unused_result
+    public func deserialiseArrayUnconstrained<R>() throws -> AnySequence<R> {
+        guard case .Array(let a) = currentPrimitive else { throw DeserialiseError.IncorrectType(currentPrimitive) }
+        return try AnySequence(a.map {
+            try deserialise(primitive: $0)
+        })
+    }
+
+    @warn_unused_result
+    public func deserialiseArray<R : Serialisable>() throws -> AnySequence<R> {
+        return try deserialiseArrayUnconstrained()
+    }
+
+    @warn_unused_result
+    public func deserialiseMapUnconstrained<K, V>() throws -> AnySequence<(K, V)> {
+        guard case .Map(let a) = currentPrimitive else { throw DeserialiseError.IncorrectType(currentPrimitive) }
+        return try AnySequence(PairSequence(a).map {
+            try (deserialise(primitive: $0.0), deserialise(primitive: $0.1))
+        })
+    }
+
+    @warn_unused_result
+    public func deserialiseMap<K : Serialisable, V : Serialisable>() throws -> AnySequence<(K, V)> {
+        return try deserialiseMapUnconstrained()
+    }
+
 }
