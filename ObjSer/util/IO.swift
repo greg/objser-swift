@@ -55,7 +55,8 @@ public class InputStream {
     }
     
     func readByte() -> Byte {
-        return bytes[index++]
+        defer { index += 1 }
+        return bytes[index]
     }
     
     func readBytes(length length: Int) -> ArraySlice<Byte> {
