@@ -75,12 +75,12 @@ public protocol InitableSerialisable: AcyclicSerialisable {
 
 extension AcyclicSerialisable {
     
-    @_transparent
+    @inline(__always)
     public static func createForDeserialising() -> Serialisable {
         preconditionFailure("createForDeserialising() must never be called on \(Self.self) : AcyclicSerialisable. Please report this bug.")
     }
     
-    @_transparent
+    @inline(__always)
     public func deserialiseWith(des: Deserialiser) throws {
         preconditionFailure("deserialiseWith(:) must never be called on \(Self.self) : AcyclicSerialisable. Please report this bug.")
     }
@@ -89,7 +89,7 @@ extension AcyclicSerialisable {
 
 extension InitableSerialisable {
     
-    @_transparent
+    @inline(__always)
     public static func createByDeserialisingWith(des: Deserialiser) throws -> AcyclicSerialisable {
         return try self.init(deserialiser: des)
     }
