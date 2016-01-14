@@ -41,7 +41,7 @@ struct PairSequence<Element>: SequenceType {
     
     private let sequence: AnySequence<Element>
     
-    init<S : SequenceType where S.Generator.Element == Element>(_ seq: S) {
+    init<S : SequenceType where S.Generator.Element == Element, S.SubSequence : SequenceType, S.SubSequence.Generator.Element == Element, S.SubSequence.SubSequence == S.SubSequence>(_ seq: S) {
         sequence = AnySequence(seq)
     }
     
