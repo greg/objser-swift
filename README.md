@@ -24,7 +24,7 @@ See the [ObjSer](https://github.com/ObjSer/objser) repository for a description 
 [Carthage](https://github.com/Carthage/Carthage) is a simple, decentralised dependency manager. Add the following line to your [Cartfile](https://github.com/Carthage/Carthage/blob/master/Documentation/Artifacts.md#cartfile):
 
 ```
-github "ObjSer/objser-swift" ~> 0.3
+github "ObjSer/objser-swift" ~> 0.4
 ```
 
 After running `carthage update`, add the relevant framework (ObjSer iOS or ObjSer Mac) from Carthage/Build to the Embedded Binaries section in your target.
