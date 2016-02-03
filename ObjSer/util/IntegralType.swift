@@ -92,9 +92,6 @@ public struct AnyInteger {
         }
     }
 
-    public static let min: AnyInteger = AnyInteger(UInt64.max)
-    public static let max: AnyInteger = AnyInteger(Int64.min)
-
 }
 
 extension IntegralType {

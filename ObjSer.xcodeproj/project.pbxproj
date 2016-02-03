@@ -33,12 +33,12 @@
 		37712A8D1C1D643600169D1C /* PairSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37712A8B1C1D642000169D1C /* PairSequence.swift */; };
 		377C0C841C3AA1BF00B1840F /* NumericType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377C0C801C3AA1BF00B1840F /* NumericType.swift */; };
 		377C0C851C3AA1BF00B1840F /* NumericType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377C0C801C3AA1BF00B1840F /* NumericType.swift */; };
-		377C0C861C3AA1BF00B1840F /* NumericType-Bytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377C0C811C3AA1BF00B1840F /* NumericType-Bytes.swift */; };
 		377C0C871C3AA1BF00B1840F /* NumericType-Bytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377C0C811C3AA1BF00B1840F /* NumericType-Bytes.swift */; };
 		377C0C881C3AA1BF00B1840F /* IntegralType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377C0C821C3AA1BF00B1840F /* IntegralType.swift */; };
 		377C0C891C3AA1BF00B1840F /* IntegralType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377C0C821C3AA1BF00B1840F /* IntegralType.swift */; };
 		377C0C8A1C3AA1BF00B1840F /* FloatType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377C0C831C3AA1BF00B1840F /* FloatType.swift */; };
 		377C0C8B1C3AA1BF00B1840F /* FloatType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377C0C831C3AA1BF00B1840F /* FloatType.swift */; };
+		37C1A2281C61DC420096E323 /* NumericType-Bytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377C0C811C3AA1BF00B1840F /* NumericType-Bytes.swift */; };
 		37C20DE61C1EE04F006DB788 /* Primitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37C20DE51C1EE04F006DB788 /* Primitive.swift */; };
 		37C20DE71C1F21AD006DB788 /* Primitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37C20DE51C1EE04F006DB788 /* Primitive.swift */; };
 /* End PBXBuildFile section */
@@ -360,12 +360,12 @@
 				37712A101C1C747000169D1C /* ObjSer.swift in Sources */,
 				377C0C841C3AA1BF00B1840F /* NumericType.swift in Sources */,
 				37712A1C1C1C747700169D1C /* DictionaryInit.swift in Sources */,
+				37C1A2281C61DC420096E323 /* NumericType-Bytes.swift in Sources */,
 				37712A8C1C1D642000169D1C /* PairSequence.swift in Sources */,
 				37712A141C1C747000169D1C /* Conformance.swift in Sources */,
 				37712A1D1C1C747700169D1C /* IO.swift in Sources */,
 				377C0C8A1C3AA1BF00B1840F /* FloatType.swift in Sources */,
 				37712A171C1C747000169D1C /* Deserialiser.swift in Sources */,
-				377C0C861C3AA1BF00B1840F /* NumericType-Bytes.swift in Sources */,
 				377C0C881C3AA1BF00B1840F /* IntegralType.swift in Sources */,
 				37712A151C1C747000169D1C /* Format.swift in Sources */,
 				37712A131C1C747000169D1C /* Serialisable.swift in Sources */,
@@ -528,7 +528,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.$(PROJECT_NAME)";
 				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
@@ -549,6 +548,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.$(PROJECT_NAME)";
 				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;
 		};
