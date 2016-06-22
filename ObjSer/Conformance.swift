@@ -39,7 +39,7 @@ extension IntegralType where Self: InitableSerialisable {
         self = try des.deserialiseInteger()
     }
 
-    public func serialiseWith(ser: Serialiser) {
+    public func serialise(with ser: Serialiser) {
         ser.serialise(integer: self)
     }
 
@@ -63,7 +63,7 @@ extension Bool: InitableSerialisable {
         self = try des.deserialiseBool()
     }
 
-    public func serialiseWith(ser: Serialiser) {
+    public func serialise(with ser: Serialiser) {
         ser.serialise(boolean: self)
     }
 
@@ -76,7 +76,7 @@ extension FloatType where Self: InitableSerialisable {
         self = try des.deserialiseFloat()
     }
 
-    public func serialiseWith(ser: Serialiser) {
+    public func serialise(with ser: Serialiser) {
         ser.serialise(float: self)
     }
 
@@ -93,26 +93,26 @@ extension String: InitableSerialisable {
         self = try des.deserialiseString()
     }
     
-    public func serialiseWith(ser: Serialiser) {
+    public func serialise(with ser: Serialiser) {
         ser.serialise(string: self)
     }
 
 }
 
 
-extension NSData: AcyclicSerialisable {
+extension Data: AcyclicSerialisable {
 
-    public static func createByDeserialisingWith(des: Deserialiser) throws -> AcyclicSerialisable {
+    public static func createByDeserialising(with des: Deserialiser) throws -> AcyclicSerialisable {
         let bytes = try des.deserialiseData()
         return bytes.withUnsafeBufferPointer { buf in
-            return self.init(bytes: buf.baseAddress, length: bytes.count)
+            return self.init(bytes: buf.baseAddress!, count: bytes.count)
         }
     }
 
-    public func serialiseWith(ser: Serialiser) {
-        var bytes = ByteArray(count: length, repeatedValue: 0)
-        bytes.withUnsafeMutableBufferPointer { (inout buf: UnsafeMutableBufferPointer<Byte>) in
-            self.getBytes(buf.baseAddress, length: length)
+    public func serialise(with ser: Serialiser) {
+        var bytes = ByteArray(repeating: 0, count: count)
+        bytes.withUnsafeMutableBufferPointer { (buf: inout UnsafeMutableBufferPointer<Byte>) in
+            (self as NSData).getBytes(buf.baseAddress!, length: count)
         }
         ser.serialise(data: bytes)
     }
@@ -125,7 +125,7 @@ extension Array: InitableSerialisable {
         self = Array(try des.deserialiseArrayUnconstrained())
     }
 
-    public func serialiseWith(ser: Serialiser) {
+    public func serialise(with ser: Serialiser) {
         ser.serialise(unconstrainedArray: lazy)
     }
     
@@ -137,8 +137,12 @@ extension Dictionary: InitableSerialisable {
         self = Dictionary(sequence: try des.deserialiseMapUnconstrained())
     }
 
-    public func serialiseWith(ser: Serialiser) {
-        ser.serialise(unconstrainedMap: lazy)
+	public func serialise(with ser: Serialiser) {
+		ser.serialise(unconstrainedMap: self)
     }
+	
+	private static func _lazySequence<K, V, T : Sequence where T.Iterator.Element == (key: K, value: V)>(dict: T) -> LazySequence<T> {
+		return dict.lazy
+	}
 
 }

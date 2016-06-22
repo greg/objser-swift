@@ -25,10 +25,10 @@
 //  SOFTWARE.
 //
 
-struct PairSequenceGenerator<T>: GeneratorType {
+struct PairSequenceGenerator<T>: IteratorProtocol {
     
     typealias Element = (T, T)
-    private var generator: AnyGenerator<T>
+    private var generator: AnyIterator<T>
     
     mutating func next() -> (T, T)? {
         guard let a = generator.next(), let b = generator.next() else { return nil }
@@ -37,22 +37,22 @@ struct PairSequenceGenerator<T>: GeneratorType {
     
 }
 
-struct PairSequence<Element>: SequenceType {
+struct PairSequence<Element>: Sequence {
     
     private let sequence: AnySequence<Element>
     
-    init<S : SequenceType where S.Generator.Element == Element, S.SubSequence : SequenceType, S.SubSequence.Generator.Element == Element, S.SubSequence.SubSequence == S.SubSequence>(_ seq: S) {
+    init<S : Sequence where S.Iterator.Element == Element, S.SubSequence : Sequence, S.SubSequence.Iterator.Element == Element, S.SubSequence.SubSequence == S.SubSequence>(_ seq: S) {
         sequence = AnySequence(seq)
     }
     
-    typealias Generator = PairSequenceGenerator<Element>
+    typealias Iterator = PairSequenceGenerator<Element>
     
-    func generate() -> PairSequenceGenerator<Element> {
-        return PairSequenceGenerator(generator: sequence.generate())
+    func makeIterator() -> PairSequenceGenerator<Element> {
+        return PairSequenceGenerator(generator: sequence.makeIterator())
     }
     
     func underestimateCount() -> Int {
-        return sequence.underestimateCount() / 2
+        return sequence.underestimatedCount / 2
     }
     
 }

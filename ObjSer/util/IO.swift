@@ -32,11 +32,11 @@ public class OutputStream {
     public private(set) var bytes = ByteArray()
     
     func write(bytes: ByteArray) {
-        self.bytes.appendContentsOf(bytes)
+        self.bytes.append(contentsOf: bytes)
     }
     
     func write(bytes: Byte...) {
-        self.bytes.appendContentsOf(bytes)
+        self.bytes.append(contentsOf: bytes)
     }
     
 }
@@ -59,7 +59,7 @@ public class InputStream {
         return bytes[index]
     }
     
-    func readBytes(length length: Int) -> ArraySlice<Byte> {
+    func readBytes(length: Int) -> ArraySlice<Byte> {
         let slice = bytes[index..<(index+length)]
         index += length
         return slice

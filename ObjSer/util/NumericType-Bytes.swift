@@ -42,17 +42,17 @@ extension NumericType {
         let b = withUnsafePointer(&v) {
             ByteArray(UnsafeBufferPointer<Byte>(start: UnsafePointer<Byte>($0), count: sizeofValue(v)))
         }
-        return isLittleEndian ? b : ByteArray(b.reverse())
+        return isLittleEndian ? b : ByteArray(b.reversed())
     }
     
     /// Initialises the number from bytes given in little-endian order
     init(bytes: ByteArray) {
         func bcast<T>(bytes: ByteArray) -> T {
             return bytes.withUnsafeBufferPointer {
-                UnsafePointer<T>($0.baseAddress).memory
+                UnsafePointer<T>($0.baseAddress!).pointee
             }
         }
-        self = bcast(isLittleEndian ? bytes : ByteArray(bytes.reverse()))
+        self = bcast(bytes: isLittleEndian ? bytes : ByteArray(bytes.reversed()))
     }
     
 }

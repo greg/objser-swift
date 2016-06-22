@@ -28,15 +28,15 @@
 public final class Serialiser {
 
     private enum Indexing {
-        case Empty
-        case Mapping(ContiguousArray<Primitive>)
-        case Value(Primitive)
+        case empty
+        case mapping(ContiguousArray<Primitive>)
+        case value(Primitive)
     }
 
     init() { }
 
-    func serialiseRoot<T : Serialisable>(v: T) {
-        index(v)
+    func serialiseRoot<T : Serialisable>(_ value: T) {
+        index(value)
     }
 
     private var indexStack = ContiguousArray<Indexing>()
@@ -48,28 +48,28 @@ public final class Serialiser {
         let i = indexStack.count - 1
         var dict: ContiguousArray<Primitive>
         switch indexStack[i] {
-        case .Empty:
+        case .empty:
             dict = []
-        case .Mapping(let v):
+        case .mapping(let v):
             dict = v
-        case .Value(_):
+        case .value(_):
             preconditionFailure("Cannot store value for key in object that already has a sole value.")
         }
         dict.append(indexAndPromise(key))
         dict.append(indexAndPromise(v))
-        indexStack[i] = .Mapping(dict)
+        indexStack[i] = .mapping(dict)
     }
 
     /// Serialise `v` for `key` in the object.
-    public func serialise<T : Serialisable>(v: T, forKey key: String) {
-        serialise(unconstrained: v, forKey: key)
+    public func serialise<T : Serialisable>(value: T, forKey key: String) {
+        serialise(unconstrained: value, forKey: key)
     }
 
-    private func setSoleValue(v: Primitive) {
-        guard case .Empty = currentObject else {
+    private func setSoleValue(_ v: Primitive) {
+        guard case .empty = currentObject else {
             preconditionFailure("Cannot set a sole value for an object that already has a value.")
         }
-        currentObject = .Value(v)
+        currentObject = .value(v)
     }
 
     // MARK: Indexing
@@ -80,32 +80,32 @@ public final class Serialiser {
     }
 
     private func startNewObject() {
-        indexStack.append(.Empty)
+        indexStack.append(.empty)
     }
 
     private func finishObject() -> Primitive {
         let v = indexStack.popLast()!
         switch v {
-        case .Empty:
+        case .empty:
             preconditionFailure("Object being serialised (of type \(v.dynamicType)) did not call any serialise functions in its implementation of serialiseWith.")
-        case .Mapping(let m):
-            return .Map(m)
-        case .Value(let v):
+        case .mapping(let m):
+            return .map(m)
+        case .value(let v):
             return v
         }
     }
 
-    private var objects = ContiguousArray<(primitive: Primitive!, typedIDs: [String : Int]?)>()
+    private var objects = ContiguousArray<(primitive: Primitive?, typedIDs: [String : Int]?)>()
     private var objectIDs = [ObjectIdentifier : Int]()
     private var stringIDs = [String : Int]()
 
     /// - Requires: `T : Serialisable`
-    private func index<T /*: Serialisable*/>(v: T) -> Int {
+    private func index<T /*: Serialisable*/>(_ v: T) -> Int {
         precondition(indexing, "Cannot index object: indexing has already completed.")
         precondition(v is Serialisable, "Object of type \(v.dynamicType) : \(T.self) does not conform to Serialisable.")
         let v = v as! Serialisable
 
-        func unidentifiedIndex(v: Serialisable) -> Int {
+        func unidentifiedIndex(_ v: Serialisable) -> Int {
             let newID = objects.count
             // TODO: complete graph deduplication, including value types
             // deduplicate strings
@@ -126,7 +126,7 @@ public final class Serialiser {
             
             objects.append((nil, nil))
             startNewObject()
-            v.serialiseWith(self)
+			v.serialise(with: self)
             objects[newID].primitive = finishObject()
             return newID
         }
@@ -142,7 +142,7 @@ public final class Serialiser {
             if let tid = objects[id].typedIDs![name] { return tid }
             let tid = objects.count
             objects.append((nil, nil))
-            objects[tid].primitive = .TypeIdentified(name: self.indexAndPromise(name), value: promise(id))
+            objects[tid].primitive = .typeIdentified(name: self.indexAndPromise(name), value: promise(id: id))
             objects[id].typedIDs![name] = tid
             return tid
         }
@@ -150,14 +150,14 @@ public final class Serialiser {
     }
 
     /// - Requires: `T : Serialisable`
-    private func indexAndPromise<T /*: Serialisable*/>(v: T) -> Primitive {
+    private func indexAndPromise<T /*: Serialisable*/>(_ v: T) -> Primitive {
         let id = index(v)
-        return promise(id)
+        return promise(id: id)
     }
 
     private func promise(id: Int) -> Primitive {
-        return .Promised({
-            return self.resolve(id)
+        return .promised({
+            return self.resolve(id: id)
         })
     }
     
@@ -168,15 +168,15 @@ public final class Serialiser {
         let n = objects.count
         // Resolve the ids so the largest is the root object, as it should be the least referenced
         
-        return .Reference(UInt32(n-id-1))
+        return .reference(UInt32(n-id-1))
     }
     
     func writeTo(stream: OutputStream) {
         indexing = false
         // Write in reverse order, since the root object must be last.
         // TODO: count object references and sort by count, so most used objects get smaller ids
-        for p in objects.reverse() {
-            p.primitive.writeTo(stream)
+        for p in objects.reversed() {
+            p.primitive?.writeTo(stream)
         }
     }
     
@@ -192,75 +192,75 @@ extension Serialiser {
 
     /// Serialise `v` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
-    public func serialise<T : Serialisable>(serialisable: T) {
-        serialise(unconstrained: serialisable)
+    public func serialise<T : Serialisable>(_ value: T) {
+        serialise(unconstrained: value)
     }
 
     /// Serialise `v` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
     public func serialise<T : IntegralType>(integer v: T) {
-        setSoleValue(.Integer(AnyInteger(v)))
+        setSoleValue(.integer(AnyInteger(v)))
     }
 
     /// Serialise `v` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
     public func serialise(nilValue v: ()) {
-        setSoleValue(.Nil)
+        setSoleValue(.nil)
     }
 
     /// Serialise `v` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
     public func serialise(boolean v: Bool) {
-        setSoleValue(.Boolean(v))
+        setSoleValue(.boolean(v))
     }
 
     /// Serialise `v` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
     public func serialise<T : FloatType>(float v: T) {
-        setSoleValue(.Float(AnyFloat(v)))
+        setSoleValue(.float(AnyFloat(v)))
     }
 
     /// Serialise `v` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
     public func serialise(string v: String) {
-        setSoleValue(.String(v))
+        setSoleValue(.string(v))
     }
 
-    /// Serialise `v` as the sole value of the object.
+    /// Serialise `bytes` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
-    public func serialise<S : SequenceType where S.Generator.Element == Byte>(data bytes: S) {
-        setSoleValue(.Data(ByteArray(bytes)))
+    public func serialise<S : Sequence where S.Iterator.Element == Byte>(data bytes: S) {
+        setSoleValue(.data(ByteArray(bytes)))
     }
 
-    /// Serialise `v` as the sole value of the object.
+    /// Serialise `seq` as the sole value of the object.
     /// - Requires: `S.Generator.Element : Serialisable`
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
-    public func serialise<S : SequenceType>(unconstrainedArray seq: S) {
-        setSoleValue(.Array(ContiguousArray(seq.map { indexAndPromise($0) })))
+    public func serialise<S : Sequence>(unconstrainedArray seq: S) {
+        setSoleValue(.array(ContiguousArray(seq.map { indexAndPromise($0) })))
     }
 
-    /// Serialise `v` as the sole value of the object.
+    /// Serialise `seq` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
-    public func serialise<S : SequenceType where S.Generator.Element : Serialisable>(array seq: S) {
+    public func serialise<S : Sequence where S.Iterator.Element : Serialisable>(array seq: S) {
         serialise(unconstrainedArray: seq)
     }
 
-    /// Serialise `v` as the sole value of the object.
+    /// Serialise `seq` as the sole value of the object.
     /// - Requires: `S.Generator.Element == (K : Serialisable, V : Serialisable)`
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
-    public func serialise<S : SequenceType, K, V where S.Generator.Element == (K, V)>(unconstrainedMap seq: S) {
+	public func serialise<S : Sequence, K, V where S.Iterator.Element == (key: K, value: V)>(unconstrainedMap seq: S) {
         var a = ContiguousArray<Primitive>()
-        a.reserveCapacity(seq.underestimateCount() * 2)
+        a.reserveCapacity(seq.underestimatedCount * 2)
         for (key, val) in seq {
             a.append(indexAndPromise(key))
             a.append(indexAndPromise(val))
         }
-        setSoleValue(.Map(a))
+        setSoleValue(.map(a))
     }
 
-    /// Serialise `v` as the sole value of the object.
+    /// Serialise `seq` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
-    public func serialise<S : SequenceType, K : Serialisable, V : Serialisable where S.Generator.Element == (K, V)>(map seq: S) {
+	public func serialise<S : Sequence, K : Serialisable, V : Serialisable where S.Iterator.Element == (key: K, value: V)>(map seq: S) {
         serialise(unconstrainedMap: seq)
     }
 

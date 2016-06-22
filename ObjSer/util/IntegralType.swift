@@ -25,7 +25,7 @@
 //  SOFTWARE.
 //
 
-public protocol IntegralType : NumericType, IntegerType {
+public protocol IntegralType : NumericType, Integer {
     
     init<T : IntegralType>(_ v: T)
     init(_ v: Int8)

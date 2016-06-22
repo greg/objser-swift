@@ -59,8 +59,8 @@ extension CGFloat: FloatType { }
 public struct AnyFloat {
 
     private enum Box {
-        case Single(Float32)
-        case Double(Float64)
+        case single(Float32)
+        case double(Float64)
     }
 
     private let box: Box
@@ -68,15 +68,15 @@ public struct AnyFloat {
     public init<T : FloatType>(_ v: T) {
         switch v {
         case let v as AnyFloat: self = v
-        case let v as Float32: box = .Single(v)
-        case let v as Float64: box = .Double(v)
+        case let v as Float32: box = .single(v)
+        case let v as Float64: box = .double(v)
         case let v as CGFloat: self = AnyFloat(v.native)
         default: preconditionFailure("Unrecognised FloatType type \(T.self).")
         }
     }
 
     public var exactFloat32Value: Float32? {
-        guard case .Single(let v) = box else {
+        guard case .single(let v) = box else {
             return nil
         }
         return v
@@ -88,8 +88,8 @@ extension FloatType {
 
     public init(_ v: AnyFloat) {
         switch v.box {
-        case .Single(let v): self.init(v)
-        case .Double(let v): self.init(v)
+        case .single(let v): self.init(v)
+        case .double(let v): self.init(v)
         }
     }
 
@@ -99,8 +99,8 @@ extension AnyFloat : Hashable {
 
     public var hashValue: Int {
         switch box {
-        case .Single(let v): return v.hashValue
-        case .Double(let v): return v.hashValue
+        case .single(let v): return v.hashValue
+        case .double(let v): return v.hashValue
         }
     }
 
@@ -108,19 +108,19 @@ extension AnyFloat : Hashable {
 
 public func ==(a: AnyFloat, b: AnyFloat) -> Bool {
     switch (a.box, b.box) {
-    case (.Single(let a), .Single(let b)): return a == b
-    case (.Double(let a), .Double(let b)): return a == b
-    case (.Single(let a), .Double(let b)): return Float64(a) == b
-    case (.Double(let a), .Single(let b)): return a == Float64(b)
+    case (.single(let a), .single(let b)): return a == b
+    case (.double(let a), .double(let b)): return a == b
+    case (.single(let a), .double(let b)): return Float64(a) == b
+    case (.double(let a), .single(let b)): return a == Float64(b)
     }
 }
 
 public func <(a: AnyFloat, b: AnyFloat) -> Bool {
     switch (a.box, b.box) {
-    case (.Single(let a), .Single(let b)): return a < b
-    case (.Double(let a), .Double(let b)): return a < b
-    case (.Single(let a), .Double(let b)): return Float64(a) < b
-    case (.Double(let a), .Single(let b)): return a < Float64(b)
+    case (.single(let a), .single(let b)): return a < b
+    case (.double(let a), .double(let b)): return a < b
+    case (.single(let a), .double(let b)): return Float64(a) < b
+    case (.double(let a), .single(let b)): return a < Float64(b)
     }
 }
 

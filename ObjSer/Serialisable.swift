@@ -34,9 +34,9 @@ public protocol Serialisable {
     /// Initialise an instance of `self` for deserialising.
     static func createForDeserialising() -> Serialisable /* Self */
     
-    mutating func deserialiseWith(des: Deserialiser) throws
+    mutating func deserialise(with des: Deserialiser) throws
 
-    func serialiseWith(ser: Serialiser)
+    func serialise(with ser: Serialiser)
     
     /// The identifier stored with instances of the type to aid with resolving ambiguity in deserialisation (e.g. collections of protocol type).
     /// - Note: This identifier must be _unique_ amongst all types being (de)serialised. If your type is generic, this identifier should be different for each specialisation (e.g. by including the type parameter's name in the identifier).
@@ -60,7 +60,7 @@ public protocol AcyclicSerialisable: Serialisable {
     /// Initialise an instance of `self` from the given serialised value.
     /// - Remarks: This is a workaround for the impossibility of implementing initialisers as extensions on non-final classes.
     /// - Note: If you are able to implement a required initialiser on your type, conform to `InitableSerialisable` instead.
-    static func createByDeserialisingWith(des: Deserialiser) throws -> AcyclicSerialisable /* Self */
+    static func createByDeserialising(with des: Deserialiser) throws -> AcyclicSerialisable /* Self */
     
 }
 
@@ -81,7 +81,7 @@ extension AcyclicSerialisable {
     }
     
     @inline(__always)
-    public func deserialiseWith(des: Deserialiser) throws {
+    public func deserialise(with des: Deserialiser) throws {
         preconditionFailure("deserialiseWith(:) must never be called on \(Self.self) : AcyclicSerialisable. Please report this bug.")
     }
     
@@ -90,7 +90,7 @@ extension AcyclicSerialisable {
 extension InitableSerialisable {
     
     @inline(__always)
-    public static func createByDeserialisingWith(des: Deserialiser) throws -> AcyclicSerialisable {
+    public static func createByDeserialising(with des: Deserialiser) throws -> AcyclicSerialisable {
         return try self.init(deserialiser: des)
     }
     

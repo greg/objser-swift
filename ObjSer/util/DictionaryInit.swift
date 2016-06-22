@@ -27,8 +27,8 @@
 
 extension Dictionary {
     
-    init<S : SequenceType where S.Generator.Element == (Key, Value)>(sequence: S) {
-        self.init(minimumCapacity: sequence.underestimateCount())
+    init<S : Sequence where S.Iterator.Element == (Key, Value)>(sequence: S) {
+        self.init(minimumCapacity: sequence.underestimatedCount)
         for (k, v) in sequence {
             self[k] = v
         }

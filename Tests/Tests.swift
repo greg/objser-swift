@@ -48,14 +48,14 @@ class Cyclic: P {
         return self.init(m: ())
     }
 
-    func deserialiseWith(des: Deserialiser) throws {
-        a = try des.deserialiseKey("a")!
-        c = try des.deserialiseKey("c")! as Cyclic
+    func deserialise(with des: Deserialiser) throws {
+		a = try des.deserialise(forKey: "a")!
+		c = try des.deserialise(forKey: "c")! as Cyclic
     }
 
-    func serialiseWith(ser: Serialiser) {
-        ser.serialise(a, forKey: "a")
-        ser.serialise(c, forKey: "c")
+    func serialise(with ser: Serialiser) {
+		ser.serialise(value: a, forKey: "a")
+		ser.serialise(value: c, forKey: "c")
     }
 
     static var typeUniqueIdentifier: String? = "Cyclic"
@@ -75,11 +75,11 @@ struct A: P, InitableSerialisable {
     }
 
     init(deserialiser des: Deserialiser) throws {
-        a = try des.deserialiseKey("a")!
+        a = try des.deserialise(forKey: "a")!
     }
 
-    func serialiseWith(ser: Serialiser) {
-        ser.serialise(a, forKey: "a")
+    func serialise(with ser: Serialiser) {
+		ser.serialise(value: a, forKey: "a")
     }
 
     static var typeUniqueIdentifier: String? = "A"
@@ -90,12 +90,12 @@ struct B: P, AcyclicSerialisable {
     
     let b: Float
 
-    static func createByDeserialisingWith(des: Deserialiser) throws -> AcyclicSerialisable {
-        return self.init(b: try des.deserialiseKey("b")!)
+    static func createByDeserialising(with des: Deserialiser) throws -> AcyclicSerialisable {
+        return self.init(b: try des.deserialise(forKey: "b")!)
     }
 
-    func serialiseWith(ser: Serialiser) {
-        ser.serialise(b, forKey: "b")
+    func serialise(with ser: Serialiser) {
+		ser.serialise(value: b, forKey: "b")
     }
 
     static var typeUniqueIdentifier: String? = "B"
@@ -110,12 +110,12 @@ struct G<T: Serialisable>: P {
         return self.init(v: nil)
     }
 
-    mutating func deserialiseWith(des: Deserialiser) throws {
-        v = try des.deserialiseKey("v")! as T
+    mutating func deserialise(with des: Deserialiser) throws {
+        v = try des.deserialise(forKey: "v")! as T
     }
     
-    func serialiseWith(ser: Serialiser) {
-        ser.serialise(v, forKey: "v")
+    func serialise(with ser: Serialiser) {
+		ser.serialise(value: v, forKey: "v")
     }
 
     static var typeUniqueIdentifier: String? {
@@ -138,21 +138,21 @@ class Tests: XCTestCase {
     
     func testTypeCoding() {
         
-        let f = Primitive.Array([
-            Primitive.Integer(152352050802),
-            Primitive.String("aoeu"),
-            Primitive.Data([]),
-            Primitive.Float(AnyFloat(3.14159265358979323846)),
-            Primitive.Data([4, 255]),
-            Primitive.Map([]),
-            Primitive.Integer(-1),
-            Primitive.Array([]),
-            Primitive.Nil,
-            Primitive.Boolean(true),
-            Primitive.Array([
-                Primitive.String(""),
-                Primitive.Map([
-                    Primitive.Integer(-7), Primitive.Boolean(false)
+        let f = Primitive.array([
+            Primitive.integer(152352050802),
+            Primitive.string("aoeu"),
+            Primitive.data([]),
+            Primitive.float(AnyFloat(3.14159265358979323846)),
+            Primitive.data([4, 255]),
+            Primitive.map([]),
+            Primitive.integer(-1),
+            Primitive.array([]),
+            Primitive.nil,
+            Primitive.boolean(true),
+            Primitive.array([
+                Primitive.string(""),
+                Primitive.map([
+                    Primitive.integer(-7), Primitive.boolean(false)
                     ])
                 ])
             ])
@@ -203,24 +203,24 @@ class Tests: XCTestCase {
 //                mapper.map(&f, forKey: "implicit f")
 //            }
 
-            static func createByDeserialisingWith(des: Deserialiser) throws -> AcyclicSerialisable {
+            static func createByDeserialising(with des: Deserialiser) throws -> AcyclicSerialisable {
                 return try S(
-                    a: des.deserialiseKey("a")!,
-                    b: des.deserialiseKey("à very long name that will øverflow into vstring Å.")!,
-                    c: des.deserialiseKey("ç")!,
-                    d: des.deserialiseKey("d (implicit optional)"),
-                    e: des.deserialiseKey("e (explicit optional)"),
-                    f: des.deserialiseKey("implicit f")! as Bool
+                    a: des.deserialise(forKey: "a")!,
+                    b: des.deserialise(forKey: "à very long name that will øverflow into vstring Å.")!,
+                    c: des.deserialise(forKey: "ç")!,
+                    d: des.deserialise(forKey: "d (implicit optional)"),
+                    e: des.deserialise(forKey: "e (explicit optional)"),
+                    f: des.deserialise(forKey: "implicit f")! as Bool
                 )
             }
 
-            func serialiseWith(ser: Serialiser) {
-                ser.serialise(a, forKey: "a")
-                ser.serialise(b, forKey: "à very long name that will øverflow into vstring Å.")
-                ser.serialise(c, forKey: "ç")
-                if let d = d { ser.serialise(d, forKey: "d (implicit optional)") }
-                if let e = e { ser.serialise(e, forKey: "e (explicit optional)") }
-                ser.serialise(f, forKey: "implicit f")
+            func serialise(with ser: Serialiser) {
+                ser.serialise(value: a, forKey: "a")
+                ser.serialise(value: b, forKey: "à very long name that will øverflow into vstring Å.")
+                ser.serialise(value: c, forKey: "ç")
+                if let d = d { ser.serialise(value: d, forKey: "d (implicit optional)") }
+                if let e = e { ser.serialise(value: e, forKey: "e (explicit optional)") }
+                ser.serialise(value: f, forKey: "implicit f")
             }
         }
         
@@ -229,7 +229,7 @@ class Tests: XCTestCase {
         
         let o = OutputStream()
         
-        ObjSer.serialise(a, to: o)
+		ObjSer.serialise(value: a, to: o)
 //		print("bytes:", o.bytes.map { String($0, radix: 16) })
     
         let i = InputStream(bytes: o.bytes)
@@ -239,7 +239,7 @@ class Tests: XCTestCase {
 //			x += 1
 //		}
         do {
-            let b = try ObjSer.deserialiseFrom(i) as S
+			let b = try ObjSer.deserialise(fromStream: i) as S
             print("unarchived", b)
             
             XCTAssertEqual(String(a), String(b))
@@ -254,11 +254,11 @@ class Tests: XCTestCase {
         let a = Cyclic()
 
         let o = OutputStream()
-        ObjSer.serialise(a, to: o)
-        print(o.bytes.map({ String($0, radix: 16) }).joinWithSeparator(" "))
+        ObjSer.serialise(value: a, to: o)
+        print(o.bytes.map({ String($0, radix: 16) }).joined(separator: " "))
         
         do {
-            let b: Cyclic = try ObjSer.deserialiseFrom(InputStream(bytes: o.bytes))
+			let b: Cyclic = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes))
             XCTAssert(a == b)
         }
         catch {
@@ -273,11 +273,11 @@ class Tests: XCTestCase {
         let a: [P] = [A(a: -32), B(b: 4.7), c]
         
         let o = OutputStream()
-        ObjSer.serialise(a, to: o)
-        print(o.bytes.map({ String($0, radix: 16) }).joinWithSeparator(" "))
+        ObjSer.serialise(value: a, to: o)
+        print(o.bytes.map({ String($0, radix: 16) }).joined(separator: " "))
         
         do {
-            let b: [P] = try ObjSer.deserialiseFrom(InputStream(bytes: o.bytes), identifiableTypes: [A.self, B.self, Cyclic.self])
+			let b: [P] = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes), identifiableTypes: [A.self, B.self, Cyclic.self])
             print(String(a))
             print(String(b))
             XCTAssert(String(a) == String(b) && a[2] as! Cyclic == b[2] as! Cyclic)
@@ -292,11 +292,11 @@ class Tests: XCTestCase {
         let a: [P] = [G<Int>(v: 15312)/*, G<Float>(v: 3.14)*/]
 
         let o = OutputStream()
-        ObjSer.serialise(a, to: o)
-        print(o.bytes.map({ String($0, radix: 16) }).joinWithSeparator(" "))
+        ObjSer.serialise(value: a, to: o)
+        print(o.bytes.map({ String($0, radix: 16) }).joined(separator: " "))
         
         do {
-            let b: [P] = try ObjSer.deserialiseFrom(InputStream(bytes: o.bytes), identifiableTypes: [G<Int>.self, G<Float>.self])
+			let b: [P] = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes), identifiableTypes: [G<Int>.self, G<Float>.self])
             print(String(a))
             print(String(b))
             XCTAssert(String(a) == String(b))

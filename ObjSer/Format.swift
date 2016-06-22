@@ -28,78 +28,78 @@
 /// Defines the ObjSer formats.
 enum Format: Byte {
     /// 0x00 – 0x3f
-    case Ref6 = 0x00
-    case Ref8 = 0x40
-    case Ref16 = 0x60
-    case Ref32 = 0x70
+    case ref6 = 0x00
+    case ref8 = 0x40
+    case ref16 = 0x60
+    case ref32 = 0x70
     
     /// 0x80 – 0xbf
-    case PosInt6 = 0x80
+    case posInt6 = 0x80
     /// 0xe0 – 0xff
-    case NegInt5 = 0xe0
+    case negInt5 = 0xe0
     
-    case False = 0xc0
-    case True = 0xc1
+    case `false` = 0xc0
+    case `true` = 0xc1
     
-    case Nil = 0xc2
+    case `nil` = 0xc2
     
-    case Int8 = 0xc3
-    case Int16 = 0xc4
-    case Int32 = 0xc5
-    case Int64 = 0xc6
-    case UInt8 = 0xc7
-    case UInt16 = 0xc8
-    case UInt32 = 0xc9
-    case UInt64 = 0xca
+    case int8 = 0xc3
+    case int16 = 0xc4
+    case int32 = 0xc5
+    case int64 = 0xc6
+    case uInt8 = 0xc7
+    case uInt16 = 0xc8
+    case uInt32 = 0xc9
+    case uInt64 = 0xca
     
-    case Float32 = 0xcb
-    case Float64 = 0xcc
+    case float32 = 0xcb
+    case float64 = 0xcc
     
     /// 0x71 – 0x7f
-    case FString = 0x71
-    case VString = 0xcd
-    case EString = 0xce
+    case fString = 0x71
+    case vString = 0xcd
+    case eString = 0xce
     
     /// 0x61 – 0x6f
-    case FData = 0x61
-    case VData8 = 0xd0
-    case VData16 = 0xd1
-    case VData32 = 0xd2
-    case EData = 0xd3
+    case fData = 0x61
+    case vData8 = 0xd0
+    case vData16 = 0xd1
+    case vData32 = 0xd2
+    case eData = 0xd3
     
     /// 0x41 – 0x5f
-    case FArray = 0x41
-    case VArray = 0xd4
-    case EArray = 0xd5
+    case fArray = 0x41
+    case vArray = 0xd4
+    case eArray = 0xd5
     
-    case Map = 0xd6
-    case EMap = 0xd7
+    case map = 0xd6
+    case eMap = 0xd7
     
-    case TypeID = 0xd8
+    case typeID = 0xd8
     
-    case Sentinel = 0xcf
+    case sentinel = 0xcf
     
     /// 0xd9 – 0xdf
-    case Reserved = 0xd9
+    case reserved = 0xd9
     
     var byte: Byte {
         switch self {
-        case .FString: return 0x70
-        case .FData: return 0x60
-        case .FArray: return 0x40
+        case .fString: return 0x70
+        case .fData: return 0x60
+        case .fArray: return 0x40
         default: return rawValue
         }
     }
     
-    var range: ClosedInterval<Byte> {
+    var range: ClosedRange<Byte> {
         switch self {
-        case .Ref6: return 0x00...0x3f
-        case .PosInt6: return 0x80...0xbf
-        case .NegInt5: return 0xe0...0xff
-        case .FString: return 0x71...0x7f
-        case .FData: return 0x61...0x6f
-        case .FArray: return 0x41...0x5f
-        case .Reserved: return 0xd9...0xdf
+        case .ref6: return 0x00...0x3f
+        case .posInt6: return 0x80...0xbf
+        case .negInt5: return 0xe0...0xff
+        case .fString: return 0x71...0x7f
+        case .fData: return 0x61...0x6f
+        case .fArray: return 0x41...0x5f
+        case .reserved: return 0xd9...0xdf
         default: return rawValue...rawValue
         }
     }

@@ -25,26 +25,26 @@
 //  SOFTWARE.
 //
 
-public enum DeserialiseError: ErrorType {
+public enum DeserialiseError: ErrorProtocol {
     
-    case EmptyInput
-    case IncorrectType(Any)
-    case ConversionFailed(Any)
-    case UnidentifiableType(Serialisable.Type)
-    case UnknownTypeID(String)
-    case IdentifiableTypeMismatch(type: Serialisable.Type, shouldConformTo: Serialisable.Type)
+    case emptyInput
+    case incorrectType(Any)
+    case conversionFailed(Any)
+    case unidentifiableType(Serialisable.Type)
+    case unknownTypeID(String)
+    case identifiableTypeMismatch(type: Serialisable.Type, shouldConformTo: Serialisable.Type)
     
 }
 
 public final class ObjSer {
 
-    public class func serialise<T : Serialisable>(v: T, to stream: OutputStream) {
+    public class func serialise<T : Serialisable>(value: T, to stream: OutputStream) {
         let s = Serialiser()
-        s.serialiseRoot(v)
-        s.writeTo(stream)
+        s.serialiseRoot(value)
+        s.writeTo(stream: stream)
     }
 
-    public class func deserialiseFrom<R : Serialisable>(stream: InputStream, identifiableTypes: [Serialisable.Type] = []) throws -> R {
+    public class func deserialise<R : Serialisable>(fromStream stream: InputStream, identifiableTypes: [Serialisable.Type] = []) throws -> R {
         return try Deserialiser(readFrom: stream, identifiableTypes: identifiableTypes).deserialiseRoot()
     }
     

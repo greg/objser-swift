@@ -29,19 +29,19 @@
 enum Primitive {
     
     /// A promised value with an attached function that will be called to resolve the primitive for use.
-    case Promised(() -> Primitive)
+    case promised(() -> Primitive)
     
-    case Reference(UInt32)
-    case Integer(AnyInteger)
-    case Nil
-    case Boolean(Bool)
-    case Float(AnyFloat)
-    case String(Swift.String)
-    case Data(ByteArray)
-    indirect case TypeIdentified(name: Primitive, value: Primitive)
-    indirect case Array(ContiguousArray<Primitive>)
+    case reference(UInt32)
+    case integer(AnyInteger)
+    case `nil`
+    case boolean(Bool)
+    case float(AnyFloat)
+    case string(Swift.String)
+    case data(ByteArray)
+    indirect case typeIdentified(name: Primitive, value: Primitive)
+    indirect case array(ContiguousArray<Primitive>)
     /// A map, represented by an array of alternating keys and values.
-    indirect case Map(ContiguousArray<Primitive>)
+    indirect case map(ContiguousArray<Primitive>)
     
 }
 
@@ -50,119 +50,123 @@ enum Primitive {
 extension OutputStream {
     
     /// Convenience method for writing `Primitive` data
-    func write(byte: Byte, _ array: ByteArray) {
-        write(byte)
-        write(array)
+    func write(byte: Byte, array: ByteArray) {
+		write(bytes: byte)
+		write(bytes: array)
     }
-    
+	
+	/// Convenience method for writing `Primitive` data
+	func write(byte: Byte) {
+		write(bytes: byte)
+	}
+	
 }
 
 extension Primitive {
     
-    func writeTo(stream: OutputStream) {
+    func writeTo(_ stream: OutputStream) {
         switch self {
             
-        case .Promised(let resolve):
+        case .promised(let resolve):
             resolve().writeTo(stream)
             
-        case .Reference(let v):
+        case .reference(let v):
             switch v {
             case 0...0b0011_1111:
-                stream.write(Format.Ref6.byte | Byte(v))
+				stream.write(byte: Format.ref6.byte | Byte(v))
             case 0...0xff:
-                stream.write(Format.Ref8.byte, Byte(v))
+				stream.write(byte: Format.ref8.byte, array: [Byte(v)])
             case 0...0xffff:
-                stream.write(Format.Ref16.byte, UInt16(v).bytes)
+				stream.write(byte: Format.ref16.byte, array: UInt16(v).bytes)
             case 0...0xffff_ffff:
-                stream.write(Format.Ref32.byte, UInt32(v).bytes)
+				stream.write(byte: Format.ref32.byte, array: UInt32(v).bytes)
             default:
                 preconditionFailure("Could not format reference value \(v) greater than 2³² - 1.")
             }
             
-        case .Integer(let v):
+        case .integer(let v):
             if let v = Int8(convert: v) {
                 switch v {
                 case 0...0b0011_1111:
-                    stream.write(Format.PosInt6.byte | Byte(v))
+					stream.write(byte: Format.posInt6.byte | Byte(v))
                 case -32..<0:
-                    stream.write(Byte(bitPattern: v))
+					stream.write(byte: Format.negInt5.byte | Byte(bitPattern: v))
                 default:
-                    stream.write(Format.Int8.byte, Byte(bitPattern: v))
+					stream.write(byte: Format.int8.byte, array: [Byte(bitPattern: v)])
                 }
             }
-            else if let v = UInt8(convert: v) { stream.write(Format.UInt8.byte, v) }
-            else if let v = Int16(convert: v) { stream.write(Format.Int16.byte, v.bytes) }
-            else if let v = UInt16(convert: v) { stream.write(Format.UInt16.byte, v.bytes) }
-            else if let v = Int32(convert: v) { stream.write(Format.Int32.byte, v.bytes) }
-            else if let v = UInt32(convert: v) { stream.write(Format.UInt32.byte, v.bytes) }
-            else if let v = Int64(convert: v) { stream.write(Format.Int64.byte, v.bytes) }
-            else if let v = UInt64(convert: v) { stream.write(Format.UInt64.byte, v.bytes) }
+			else if let v = UInt8(convert: v) { stream.write(byte: Format.uInt8.byte, array: v.bytes) }
+            else if let v = Int16(convert: v) { stream.write(byte: Format.int16.byte, array: v.bytes) }
+            else if let v = UInt16(convert: v) { stream.write(byte: Format.uInt16.byte, array: v.bytes) }
+            else if let v = Int32(convert: v) { stream.write(byte: Format.int32.byte, array: v.bytes) }
+            else if let v = UInt32(convert: v) { stream.write(byte: Format.uInt32.byte, array: v.bytes) }
+            else if let v = Int64(convert: v) { stream.write(byte: Format.int64.byte, array: v.bytes) }
+            else if let v = UInt64(convert: v) { stream.write(byte: Format.uInt64.byte, array: v.bytes) }
             
-        case .Nil:
-            stream.write(Format.Nil.byte)
+        case .nil:
+			stream.write(byte: Format.nil.byte)
             
-        case .Boolean(let v):
-            stream.write(v ? Format.True.byte : Format.False.byte)
+        case .boolean(let v):
+			stream.write(byte: v ? Format.true.byte : Format.false.byte)
             
-        case .Float(let v):
-            if let v = v.exactFloat32Value { stream.write(Format.Float32.byte, v.bytes) }
-            else { stream.write(Format.Float64.byte, Float64(v).bytes) }
+        case .float(let v):
+			if let v = v.exactFloat32Value { stream.write(byte: Format.float32.byte, array: v.bytes) }
+			else { stream.write(byte: Format.float64.byte, array: Float64(v).bytes) }
 
-        case .String(let v):
+        case .string(let v):
             switch v.utf8.count {
             case 0:
-                stream.write(Format.EString.byte)
+				stream.write(byte: Format.eString.byte)
             case 1...0b0000_1111:
                 var b = v.nulTerminatedUTF8
                 b.removeLast()
-                stream.write(Format.FString.byte | Byte(b.count), b)
+				stream.write(byte: Format.fString.byte | Byte(b.count), array: b)
             default:
-                stream.write(Format.VString.byte, v.nulTerminatedUTF8)
+                stream.write(byte: Format.vString.byte, array: v.nulTerminatedUTF8)
             }
             
-        case .Data(let v):
+        case .data(let v):
             let c = v.count
             switch c {
             case 0:
-                stream.write(Format.EData.byte)
+                stream.write(byte: Format.eData.byte)
             case 1...0b0000_1111:
-                stream.write(Format.FData.byte | Byte(c), v)
+                stream.write(byte: Format.fData.byte | Byte(c), array: v)
             case 0...0xff:
-                stream.write(Format.VData8.byte, Byte(c))
-                stream.write(v)
+                stream.write(byte: Format.vData8.byte, array: [Byte(c)])
+                stream.write(bytes: v)
             case 0...0xffff:
-                stream.write(Format.VData16.byte, UInt16(c).bytes)
-                stream.write(v)
+                stream.write(byte: Format.vData16.byte, array: UInt16(c).bytes)
+                stream.write(bytes: v)
             default:
-                stream.write(Format.VData32.byte, UInt32(c).bytes)
-                stream.write(v)
+                stream.write(byte: Format.vData32.byte, array: UInt32(c).bytes)
+                stream.write(bytes: v)
             }
             
-        case .Array(let v):
-            let c = v.count
-            switch c {
+        case .array(let v):
+            switch v.count {
             case 0:
-                stream.write(Format.EArray.byte)
+                stream.write(byte: Format.eArray.byte)
             case 1...0b001_1111:
-                stream.write(Format.FArray.byte | Byte(c))
+                stream.write(byte: Format.fArray.byte | Byte(v.count))
                 v.forEach { $0.writeTo(stream) }
             default:
-                stream.write(Format.VArray.byte)
+                stream.write(byte: Format.vArray.byte)
                 v.forEach { $0.writeTo(stream) }
-                stream.write(Format.Sentinel.byte)
+                stream.write(byte: Format.sentinel.byte)
             }
             
-        case .Map(let a):
+        case .map(let a):
             if a.count == 0 {
-                stream.write(Format.EMap.byte)
+                stream.write(byte: Format.eMap.byte)
             }
             else {
-                stream.write(Format.Map.byte)
-                Primitive.Array(a).writeTo(stream)
+                stream.write(byte: Format.map.byte)
+                Primitive.array(a).writeTo(stream)
             }
             
-        case .TypeIdentified(let name, let v):
-            stream.write(Format.TypeID.byte)
+        case .typeIdentified(let name, let v):
+            stream.write(byte: Format.typeID.byte)
             name.writeTo(stream)
             v.writeTo(stream)
         }
@@ -174,7 +178,7 @@ extension Primitive {
 
 extension InputStream {
     
-    func readByteArray(length length: Int) -> ByteArray {
+    func readByteArray(length: Int) -> ByteArray {
         return ByteArray(readBytes(length: length))
     }
     
@@ -184,7 +188,7 @@ extension String {
     
     init?(UTF8Bytes bytes: ByteArray) {
         guard let str = bytes.withUnsafeBufferPointer({
-            String(UTF8String: UnsafePointer<CChar>($0.baseAddress))
+            String(validatingUTF8: UnsafePointer<CChar>($0.baseAddress!))
         }) else {
             return nil
         }
@@ -195,129 +199,129 @@ extension String {
 
 extension Primitive {
     
-    enum FormatError: ErrorType {
+    enum FormatError: ErrorProtocol {
         
-        case SentinelReached
-        case ReservedCode(Byte)
-        case InvalidMapArray(Primitive)
-        case InvalidString(ByteArray)
+        case sentinelReached
+        case reservedCode(Byte)
+        case invalidMapArray(Primitive)
+        case invalidString(ByteArray)
         
     }
     
     init(readFrom stream: InputStream) throws {
         let v = stream.readByte()
         switch v {
-        case Format.Ref6.range:
-            self = .Reference(UInt32(v))
-        case Format.Ref8.byte:
-            self = .Reference(UInt32(stream.readByte()))
-        case Format.Ref16.byte:
-            self = .Reference(UInt32(UInt16(bytes: stream.readByteArray(length: 2))))
-        case Format.Ref32.byte:
-            self = .Reference(UInt32(bytes: stream.readByteArray(length: 4)))
+        case Format.ref6.range:
+            self = .reference(UInt32(v))
+        case Format.ref8.byte:
+            self = .reference(UInt32(stream.readByte()))
+        case Format.ref16.byte:
+            self = .reference(UInt32(UInt16(bytes: stream.readByteArray(length: 2))))
+        case Format.ref32.byte:
+            self = .reference(UInt32(bytes: stream.readByteArray(length: 4)))
             
-        case Format.PosInt6.range:
-            self = .Integer(AnyInteger(v & 0b0011_1111))
-        case Format.NegInt5.range:
-            self = .Integer(AnyInteger(Int8(bitPattern: v)))
+        case Format.posInt6.range:
+            self = .integer(AnyInteger(v & 0b0011_1111))
+        case Format.negInt5.range:
+            self = .integer(AnyInteger(Int8(bitPattern: v)))
             
-        case Format.False.byte:
-            self = .Boolean(false)
-        case Format.True.byte:
-            self = .Boolean(true)
+        case Format.false.byte:
+            self = .boolean(false)
+        case Format.true.byte:
+            self = .boolean(true)
             
-        case Format.Nil.byte:
-            self = .Nil
+        case Format.nil.byte:
+            self = .nil
             
-        case Format.Int8.byte:
-            self = .Integer(AnyInteger(Int8(bitPattern: stream.readByte())))
-        case Format.Int16.byte:
-            self = .Integer(AnyInteger(Int16(bytes: stream.readByteArray(length: 2))))
-        case Format.Int32.byte:
-            self = .Integer(AnyInteger(Int32(bytes: stream.readByteArray(length: 4))))
-        case Format.Int64.byte:
-            self = .Integer(AnyInteger(Int64(bytes: stream.readByteArray(length: 8))))
-        case Format.UInt8.byte:
-            self = .Integer(AnyInteger(UInt8(stream.readByte())))
-        case Format.UInt16.byte:
-            self = .Integer(AnyInteger(UInt16(bytes: stream.readByteArray(length: 2))))
-        case Format.UInt32.byte:
-            self = .Integer(AnyInteger(UInt32(bytes: stream.readByteArray(length: 4))))
-        case Format.UInt64.byte:
-            self = .Integer(AnyInteger(UInt64(bytes: stream.readByteArray(length: 8))))
+        case Format.int8.byte:
+            self = .integer(AnyInteger(Int8(bitPattern: stream.readByte())))
+        case Format.int16.byte:
+            self = .integer(AnyInteger(Int16(bytes: stream.readByteArray(length: 2))))
+        case Format.int32.byte:
+            self = .integer(AnyInteger(Int32(bytes: stream.readByteArray(length: 4))))
+        case Format.int64.byte:
+            self = .integer(AnyInteger(Int64(bytes: stream.readByteArray(length: 8))))
+        case Format.uInt8.byte:
+            self = .integer(AnyInteger(UInt8(stream.readByte())))
+        case Format.uInt16.byte:
+            self = .integer(AnyInteger(UInt16(bytes: stream.readByteArray(length: 2))))
+        case Format.uInt32.byte:
+            self = .integer(AnyInteger(UInt32(bytes: stream.readByteArray(length: 4))))
+        case Format.uInt64.byte:
+            self = .integer(AnyInteger(UInt64(bytes: stream.readByteArray(length: 8))))
             
-        case Format.Float32.byte:
-            self = .Float(AnyFloat(Float32(bytes: stream.readByteArray(length: 4))))
-        case Format.Float64.byte:
-            self = .Float(AnyFloat(Float64(bytes: stream.readByteArray(length: 8))))
+        case Format.float32.byte:
+            self = .float(AnyFloat(Float32(bytes: stream.readByteArray(length: 4))))
+        case Format.float64.byte:
+            self = .float(AnyFloat(Float64(bytes: stream.readByteArray(length: 8))))
             
-        case Format.FString.range:
+        case Format.fString.range:
             var b = stream.readByteArray(length: Int(v) & 0b1111)
             b.append(0)
             guard let str = Swift.String(UTF8Bytes: b) else {
-                throw FormatError.InvalidString(b)
+                throw FormatError.invalidString(b)
             }
-            self = .String(str)
-        case Format.VString.byte:
+            self = .string(str)
+        case Format.vString.byte:
             var b = ByteArray()
             while b.last != 0 {
                 b.append(stream.readByte())
             }
             guard let str = Swift.String(UTF8Bytes: b) else {
-                throw FormatError.InvalidString(b)
+                throw FormatError.invalidString(b)
             }
-            self = .String(str)
-        case Format.EString.byte:
-            self = .String("")
+            self = .string(str)
+        case Format.eString.byte:
+            self = .string("")
             
-        case Format.FData.range:
-            self = .Data(stream.readByteArray(length: Int(v) & 0b1111))
-        case Format.VData8.byte:
-            self = .Data(stream.readByteArray(length: Int(stream.readByte())))
-        case Format.VData16.byte:
+        case Format.fData.range:
+            self = .data(stream.readByteArray(length: Int(v) & 0b1111))
+        case Format.vData8.byte:
+            self = .data(stream.readByteArray(length: Int(stream.readByte())))
+        case Format.vData16.byte:
             let len = Swift.UInt16(bytes: stream.readByteArray(length: 2))
-            self = .Data(stream.readByteArray(length: Int(len)))
-        case Format.VData32.byte:
+            self = .data(stream.readByteArray(length: Int(len)))
+        case Format.vData32.byte:
             let len = Swift.UInt32(bytes: stream.readByteArray(length: 4))
-            self = .Data(stream.readByteArray(length: Int(len)))
-        case Format.EData.byte:
-            self = .Data([])
+            self = .data(stream.readByteArray(length: Int(len)))
+        case Format.eData.byte:
+            self = .data([])
             
-        case Format.FArray.range:
+        case Format.fArray.range:
             let len = Int(v & 0b1_1111)
             var array = ContiguousArray<Primitive>()
             array.reserveCapacity(len)
             for _ in 0..<len {
                 array.append(try Primitive(readFrom: stream))
             }
-            self = .Array(array)
-        case Format.VArray.byte:
+            self = .array(array)
+        case Format.vArray.byte:
             var array = ContiguousArray<Primitive>()
             while true {
                 do { array.append(try Primitive(readFrom: stream)) }
-                catch FormatError.SentinelReached { break }
+                catch FormatError.sentinelReached { break }
             }
-            self = .Array(array)
-        case Format.EArray.byte:
-            self = .Array([])
+            self = .array(array)
+        case Format.eArray.byte:
+            self = .array([])
             
-        case Format.Map.byte:
+        case Format.map.byte:
             let a = try Primitive(readFrom: stream)
-            guard case .Array(let v) = a else {
-                throw FormatError.InvalidMapArray(a)
+            guard case .array(let v) = a else {
+                throw FormatError.invalidMapArray(a)
             }
-            self = .Map(v)
-        case Format.EMap.byte:
-            self = .Map([])
+            self = .map(v)
+        case Format.eMap.byte:
+            self = .map([])
             
-        case Format.TypeID.byte:
-            self = .TypeIdentified(name: try Primitive(readFrom: stream), value: try Primitive(readFrom: stream))
+        case Format.typeID.byte:
+            self = .typeIdentified(name: try Primitive(readFrom: stream), value: try Primitive(readFrom: stream))
             
-        case Format.Sentinel.byte:
-            throw FormatError.SentinelReached
+        case Format.sentinel.byte:
+            throw FormatError.sentinelReached
             
-        case Format.Reserved.range:
-            throw FormatError.ReservedCode(v)
+        case Format.reserved.range:
+            throw FormatError.reservedCode(v)
             
         default:
             preconditionFailure("Unrecognised format value \(v). THIS SHOULD NEVER HAPPEN — the format reader should cover all possible byte values. Please report this issue, including the library version, and the unrecognised value \(v).")
