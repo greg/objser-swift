@@ -49,13 +49,13 @@ class Cyclic: P {
     }
 
     func deserialise(with des: Deserialiser) throws {
-		a = try des.deserialise(forKey: "a")!
-		c = try des.deserialise(forKey: "c")! as Cyclic
+        a = try des.deserialise(forKey: "a")!
+        c = try des.deserialise(forKey: "c")! as Cyclic
     }
 
     func serialise(with ser: Serialiser) {
-		ser.serialise(value: a, forKey: "a")
-		ser.serialise(value: c, forKey: "c")
+        ser.serialise(value: a, forKey: "a")
+        ser.serialise(value: c, forKey: "c")
     }
 
     static var typeUniqueIdentifier: String? = "Cyclic"
@@ -79,7 +79,7 @@ struct A: P, InitableSerialisable {
     }
 
     func serialise(with ser: Serialiser) {
-		ser.serialise(value: a, forKey: "a")
+        ser.serialise(value: a, forKey: "a")
     }
 
     static var typeUniqueIdentifier: String? = "A"
@@ -95,7 +95,7 @@ struct B: P, AcyclicSerialisable {
     }
 
     func serialise(with ser: Serialiser) {
-		ser.serialise(value: b, forKey: "b")
+        ser.serialise(value: b, forKey: "b")
     }
 
     static var typeUniqueIdentifier: String? = "B"
@@ -115,7 +115,7 @@ struct G<T: Serialisable>: P {
     }
     
     func serialise(with ser: Serialiser) {
-		ser.serialise(value: v, forKey: "v")
+        ser.serialise(value: v, forKey: "v")
     }
 
     static var typeUniqueIdentifier: String? {
@@ -159,25 +159,25 @@ class Tests: XCTestCase {
         
         let o = OutputStream()
         f.writeTo(o)
-//		o.close()
-//		let data = o.propertyForKey(NSStreamDataWrittenToMemoryStreamKey) as! NSData
-//		print("data of size \(data.length): \(data)")
+//        o.close()
+//        let data = o.propertyForKey(NSStreamDataWrittenToMemoryStreamKey) as! NSData
+//        print("data of size \(data.length): \(data)")
         let data = o.bytes
-//		print("data of size \(data.count): \(data)")
-//		let i = NSInputStream(data: data)
-//		i.open()
+//        print("data of size \(data.count): \(data)")
+//        let i = NSInputStream(data: data)
+//        i.open()
         let i = InputStream(bytes: data)
         let g = try! Primitive(readFrom: i)
-//		i.close()
-//		
+//        i.close()
+//        
         XCTAssertEqual(String(f), String(g))
         
-//		let b = [215,68,113,97,117,97,195,184,101,117,113,98,66,113,99,207] as [UInt8]
-//		let ii = NSInputStream(data: NSData(bytes: b, length: b.count))
-//		ii.open()
-//		let h = try! Primitive(stream: ii)
-//		ii.close()
-//		print(h)
+//        let b = [215,68,113,97,117,97,195,184,101,117,113,98,66,113,99,207] as [UInt8]
+//        let ii = NSInputStream(data: NSData(bytes: b, length: b.count))
+//        ii.open()
+//        let h = try! Primitive(stream: ii)
+//        ii.close()
+//        print(h)
     }
     
     func testMapping() {
@@ -229,17 +229,17 @@ class Tests: XCTestCase {
         
         let o = OutputStream()
         
-		ObjSer.serialise(value: a, to: o)
-//		print("bytes:", o.bytes.map { String($0, radix: 16) })
+        ObjSer.serialise(value: a, to: o)
+//        print("bytes:", o.bytes.map { String($0, radix: 16) })
     
         let i = InputStream(bytes: o.bytes)
-//		var x = 0
-//		while i.hasBytesAvailable {
-//			print(x, try? Primitive(readFrom: i))
-//			x += 1
-//		}
+//        var x = 0
+//        while i.hasBytesAvailable {
+//            print(x, try? Primitive(readFrom: i))
+//            x += 1
+//        }
         do {
-			let b = try ObjSer.deserialise(fromStream: i) as S
+            let b = try ObjSer.deserialise(fromStream: i) as S
             print("unarchived", b)
             
             XCTAssertEqual(String(a), String(b))
@@ -258,7 +258,7 @@ class Tests: XCTestCase {
         print(o.bytes.map({ String($0, radix: 16) }).joined(separator: " "))
         
         do {
-			let b: Cyclic = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes))
+            let b: Cyclic = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes))
             XCTAssert(a == b)
         }
         catch {
@@ -277,7 +277,7 @@ class Tests: XCTestCase {
         print(o.bytes.map({ String($0, radix: 16) }).joined(separator: " "))
         
         do {
-			let b: [P] = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes), identifiableTypes: [A.self, B.self, Cyclic.self])
+            let b: [P] = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes), identifiableTypes: [A.self, B.self, Cyclic.self])
             print(String(a))
             print(String(b))
             XCTAssert(String(a) == String(b) && a[2] as! Cyclic == b[2] as! Cyclic)
@@ -296,7 +296,7 @@ class Tests: XCTestCase {
         print(o.bytes.map({ String($0, radix: 16) }).joined(separator: " "))
         
         do {
-			let b: [P] = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes), identifiableTypes: [G<Int>.self, G<Float>.self])
+            let b: [P] = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes), identifiableTypes: [G<Int>.self, G<Float>.self])
             print(String(a))
             print(String(b))
             XCTAssert(String(a) == String(b))

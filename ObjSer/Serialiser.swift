@@ -100,6 +100,7 @@ public final class Serialiser {
     private var stringIDs = [String : Int]()
 
     /// - Requires: `T : Serialisable`
+    @discardableResult
     private func index<T /*: Serialisable*/>(_ v: T) -> Int {
         precondition(indexing, "Cannot index object: indexing has already completed.")
         precondition(v is Serialisable, "Object of type \(v.dynamicType) : \(T.self) does not conform to Serialisable.")
@@ -126,7 +127,7 @@ public final class Serialiser {
             
             objects.append((nil, nil))
             startNewObject()
-			v.serialise(with: self)
+            v.serialise(with: self)
             objects[newID].primitive = finishObject()
             return newID
         }
@@ -248,7 +249,7 @@ extension Serialiser {
     /// Serialise `seq` as the sole value of the object.
     /// - Requires: `S.Generator.Element == (K : Serialisable, V : Serialisable)`
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
-	public func serialise<S : Sequence, K, V where S.Iterator.Element == (key: K, value: V)>(unconstrainedMap seq: S) {
+    public func serialise<S : Sequence, K, V where S.Iterator.Element == (key: K, value: V)>(unconstrainedMap seq: S) {
         var a = ContiguousArray<Primitive>()
         a.reserveCapacity(seq.underestimatedCount * 2)
         for (key, val) in seq {
@@ -260,7 +261,7 @@ extension Serialiser {
 
     /// Serialise `seq` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
-	public func serialise<S : Sequence, K : Serialisable, V : Serialisable where S.Iterator.Element == (key: K, value: V)>(map seq: S) {
+    public func serialise<S : Sequence, K : Serialisable, V : Serialisable where S.Iterator.Element == (key: K, value: V)>(map seq: S) {
         serialise(unconstrainedMap: seq)
     }
 

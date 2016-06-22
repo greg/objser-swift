@@ -137,12 +137,8 @@ extension Dictionary: InitableSerialisable {
         self = Dictionary(sequence: try des.deserialiseMapUnconstrained())
     }
 
-	public func serialise(with ser: Serialiser) {
-		ser.serialise(unconstrainedMap: self)
+    public func serialise(with ser: Serialiser) {
+        ser.serialise(unconstrainedMap: self)
     }
-	
-	private static func _lazySequence<K, V, T : Sequence where T.Iterator.Element == (key: K, value: V)>(dict: T) -> LazySequence<T> {
-		return dict.lazy
-	}
 
 }

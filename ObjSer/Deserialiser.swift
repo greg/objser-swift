@@ -53,7 +53,7 @@ public final class Deserialiser {
 
         try require(primitives.count > 0, DeserialiseError.emptyInput)
 
-		deserialised = ContiguousArray(repeating: nil, count: primitives.count)
+        deserialised = ContiguousArray(repeating: nil, count: primitives.count)
         
         for t in identifiableTypes {
             guard let id = t.typeUniqueIdentifier else {
@@ -114,14 +114,14 @@ public final class Deserialiser {
         defer { deserialisingStack.removeLast() }
 
         if let O = O as? AcyclicSerialisable.Type {
-			let v = try O.createByDeserialising(with: self)
+            let v = try O.createByDeserialising(with: self)
             if let i = index { deserialised[i] = v }
             return v as! R
         }
         else if let O = O as? Serialisable.Type {
             var v = O.createForDeserialising()
             if let i = index { deserialised[i] = v }
-			try v.deserialise(with: self)
+            try v.deserialise(with: self)
             return v as! R
         }
         else {
@@ -164,7 +164,7 @@ extension Deserialiser {
     /// Return a value of type `R` for `key`, or `nil` if the value does not exist.
     @warn_unused_result
     public func deserialise<R : Serialisable>(forKey key: String) throws -> R? {
-		return try deserialiseUnconstrained(forKey: key)
+        return try deserialiseUnconstrained(forKey: key)
     }
 
     @warn_unused_result

@@ -51,15 +51,15 @@ extension OutputStream {
     
     /// Convenience method for writing `Primitive` data
     func write(byte: Byte, array: ByteArray) {
-		write(bytes: byte)
-		write(bytes: array)
+        write(bytes: byte)
+        write(bytes: array)
     }
-	
-	/// Convenience method for writing `Primitive` data
-	func write(byte: Byte) {
-		write(bytes: byte)
-	}
-	
+    
+    /// Convenience method for writing `Primitive` data
+    func write(byte: Byte) {
+        write(bytes: byte)
+    }
+    
 }
 
 extension Primitive {
@@ -73,13 +73,13 @@ extension Primitive {
         case .reference(let v):
             switch v {
             case 0...0b0011_1111:
-				stream.write(byte: Format.ref6.byte | Byte(v))
+                stream.write(byte: Format.ref6.byte | Byte(v))
             case 0...0xff:
-				stream.write(byte: Format.ref8.byte, array: [Byte(v)])
+                stream.write(byte: Format.ref8.byte, array: [Byte(v)])
             case 0...0xffff:
-				stream.write(byte: Format.ref16.byte, array: UInt16(v).bytes)
+                stream.write(byte: Format.ref16.byte, array: UInt16(v).bytes)
             case 0...0xffff_ffff:
-				stream.write(byte: Format.ref32.byte, array: UInt32(v).bytes)
+                stream.write(byte: Format.ref32.byte, array: UInt32(v).bytes)
             default:
                 preconditionFailure("Could not format reference value \(v) greater than 2³² - 1.")
             }
@@ -88,14 +88,14 @@ extension Primitive {
             if let v = Int8(convert: v) {
                 switch v {
                 case 0...0b0011_1111:
-					stream.write(byte: Format.posInt6.byte | Byte(v))
+                    stream.write(byte: Format.posInt6.byte | Byte(v))
                 case -32..<0:
-					stream.write(byte: Format.negInt5.byte | Byte(bitPattern: v))
+                    stream.write(byte: Format.negInt5.byte | Byte(bitPattern: v))
                 default:
-					stream.write(byte: Format.int8.byte, array: [Byte(bitPattern: v)])
+                    stream.write(byte: Format.int8.byte, array: [Byte(bitPattern: v)])
                 }
             }
-			else if let v = UInt8(convert: v) { stream.write(byte: Format.uInt8.byte, array: v.bytes) }
+            else if let v = UInt8(convert: v) { stream.write(byte: Format.uInt8.byte, array: v.bytes) }
             else if let v = Int16(convert: v) { stream.write(byte: Format.int16.byte, array: v.bytes) }
             else if let v = UInt16(convert: v) { stream.write(byte: Format.uInt16.byte, array: v.bytes) }
             else if let v = Int32(convert: v) { stream.write(byte: Format.int32.byte, array: v.bytes) }
@@ -104,23 +104,23 @@ extension Primitive {
             else if let v = UInt64(convert: v) { stream.write(byte: Format.uInt64.byte, array: v.bytes) }
             
         case .nil:
-			stream.write(byte: Format.nil.byte)
+            stream.write(byte: Format.nil.byte)
             
         case .boolean(let v):
-			stream.write(byte: v ? Format.true.byte : Format.false.byte)
+            stream.write(byte: v ? Format.true.byte : Format.false.byte)
             
         case .float(let v):
-			if let v = v.exactFloat32Value { stream.write(byte: Format.float32.byte, array: v.bytes) }
-			else { stream.write(byte: Format.float64.byte, array: Float64(v).bytes) }
+            if let v = v.exactFloat32Value { stream.write(byte: Format.float32.byte, array: v.bytes) }
+            else { stream.write(byte: Format.float64.byte, array: Float64(v).bytes) }
 
         case .string(let v):
             switch v.utf8.count {
             case 0:
-				stream.write(byte: Format.eString.byte)
+                stream.write(byte: Format.eString.byte)
             case 1...0b0000_1111:
                 var b = v.nulTerminatedUTF8
                 b.removeLast()
-				stream.write(byte: Format.fString.byte | Byte(b.count), array: b)
+                stream.write(byte: Format.fString.byte | Byte(b.count), array: b)
             default:
                 stream.write(byte: Format.vString.byte, array: v.nulTerminatedUTF8)
             }
