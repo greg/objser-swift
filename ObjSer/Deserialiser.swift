@@ -88,7 +88,7 @@ public final class Deserialiser {
     }
 
     @warn_unused_result
-    private func deserialise<R /*: Serialisable*/>(index index: Int? = nil, primitive: Primitive? = nil, overrideType O: Any.Type = R.self) throws -> R {
+    private func deserialise<R /*: Serialisable*/>(index: Int? = nil, primitive: Primitive? = nil, overrideType O: Any.Type = R.self) throws -> R {
         assert((index != nil) || (primitive != nil), "Index or primitive must be provided.")
 
         // if top-level and already deserialised, return value

@@ -284,7 +284,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0720;
-				LastUpgradeCheck = 0720;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "Greg Omelaenko";
 				TargetAttributes = {
 					377129D11C1C703300169D1C = {
@@ -292,12 +292,14 @@
 					};
 					377129FD1C1C710900169D1C = {
 						CreatedOnToolsVersion = 7.2;
+						LastSwiftMigration = 0800;
 					};
 					37712A2D1C1C778E00169D1C = {
 						CreatedOnToolsVersion = 7.2;
 					};
 					37712A4B1C1C77AF00169D1C = {
 						CreatedOnToolsVersion = 7.2;
+						LastSwiftMigration = 0800;
 					};
 				};
 			};
@@ -568,6 +570,7 @@
 				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -588,6 +591,8 @@
 				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -612,6 +617,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.ObjSerTests-Mac";
 				PRODUCT_NAME = "$(PROJECT_NAME)Tests-Mac";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;
 		};
@@ -625,6 +631,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.ObjSerTests-iOS";
 				PRODUCT_NAME = "$(PROJECT_NAME)Tests-iOS";
 				SDKROOT = iphoneos;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -638,6 +645,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.MostlyInfinite.ObjSerTests-iOS";
 				PRODUCT_NAME = "$(PROJECT_NAME)Tests-iOS";
 				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
