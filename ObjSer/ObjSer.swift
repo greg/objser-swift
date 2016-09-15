@@ -38,13 +38,13 @@ public enum DeserialiseError: Error {
 
 public final class ObjSer {
 
-    public class func serialise<T : Serialisable>(value: T, to stream: OutputStream) {
+    public class func serialise<T : Serialisable>(_ value: T, to stream: OutputStream) {
         let s = Serialiser()
         s.serialiseRoot(value)
         s.writeTo(stream: stream)
     }
 
-    public class func deserialise<R : Serialisable>(fromStream stream: InputStream, identifiableTypes: [Serialisable.Type] = []) throws -> R {
+    public class func deserialise<R : Serialisable>(from stream: InputStream, identifiableTypes: [Serialisable.Type] = []) throws -> R {
         return try Deserialiser(readFrom: stream, identifiableTypes: identifiableTypes).deserialiseRoot()
     }
     
