@@ -25,7 +25,7 @@
 //  SOFTWARE.
 //
 
-public enum DeserialiseError: ErrorProtocol {
+public enum DeserialiseError: Error {
     
     case emptyInput
     case incorrectType(Any)

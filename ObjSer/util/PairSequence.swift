@@ -28,7 +28,7 @@
 struct PairSequenceGenerator<T>: IteratorProtocol {
     
     typealias Element = (T, T)
-    private var generator: AnyIterator<T>
+    fileprivate var generator: AnyIterator<T>
     
     mutating func next() -> (T, T)? {
         guard let a = generator.next(), let b = generator.next() else { return nil }
@@ -41,14 +41,14 @@ struct PairSequence<Element>: Sequence {
     
     private let sequence: AnySequence<Element>
     
-    init<S : Sequence where S.Iterator.Element == Element, S.SubSequence : Sequence, S.SubSequence.Iterator.Element == Element, S.SubSequence.SubSequence == S.SubSequence>(_ seq: S) {
+    init<S : Sequence>(_ seq: S) where S.Iterator.Element == Element, S.SubSequence : Sequence, S.SubSequence.Iterator.Element == Element, S.SubSequence.SubSequence == S.SubSequence {
         sequence = AnySequence(seq)
     }
     
     typealias Iterator = PairSequenceGenerator<Element>
-    
-    func makeIterator() -> PairSequenceGenerator<Element> {
-        return PairSequenceGenerator(generator: sequence.makeIterator())
+
+    func makeIterator() -> Iterator {
+        return Iterator(generator: sequence.makeIterator())
     }
     
     func underestimateCount() -> Int {

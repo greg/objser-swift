@@ -39,8 +39,11 @@ extension NumericType {
     /// The bytes of the number, in little-endian order
     var bytes: ByteArray {
         var v = self
-        let b = withUnsafePointer(&v) {
-            ByteArray(UnsafeBufferPointer<Byte>(start: UnsafePointer<Byte>($0), count: sizeofValue(v)))
+        let count = MemoryLayout.size(ofValue: v)
+        let b = withUnsafePointer(to: &v) {
+            $0.withMemoryRebound(to: Byte.self, capacity: count) {
+                ByteArray(UnsafeBufferPointer(start: $0, count: count))
+            }
         }
         return isLittleEndian ? b : ByteArray(b.reversed())
     }
@@ -49,7 +52,9 @@ extension NumericType {
     init(bytes: ByteArray) {
         func bcast<T>(bytes: ByteArray) -> T {
             return bytes.withUnsafeBufferPointer {
-                UnsafePointer<T>($0.baseAddress!).pointee
+                $0.baseAddress!.withMemoryRebound(to: T.self, capacity: 1) {
+                    $0.pointee
+                }
             }
         }
         self = bcast(bytes: isLittleEndian ? bytes : ByteArray(bytes.reversed()))

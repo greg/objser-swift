@@ -54,6 +54,12 @@ extension OutputStream {
         write(bytes: byte)
         write(bytes: array)
     }
+
+    /// Convenience method for writing `Primitive` data
+    func write(byte: Byte, array: ContiguousArray<CChar>) {
+        write(bytes: byte)
+        write(bytes: ContiguousArray(array.map { UInt8(bitPattern: $0) }))
+    }
     
     /// Convenience method for writing `Primitive` data
     func write(byte: Byte) {
@@ -118,11 +124,11 @@ extension Primitive {
             case 0:
                 stream.write(byte: Format.eString.byte)
             case 1...0b0000_1111:
-                var b = v.nulTerminatedUTF8
+                var b = v.utf8CString
                 b.removeLast()
                 stream.write(byte: Format.fString.byte | Byte(b.count), array: b)
             default:
-                stream.write(byte: Format.vString.byte, array: v.nulTerminatedUTF8)
+                stream.write(byte: Format.vString.byte, array: v.utf8CString)
             }
             
         case .data(let v):
@@ -188,7 +194,9 @@ extension String {
     
     init?(UTF8Bytes bytes: ByteArray) {
         guard let str = bytes.withUnsafeBufferPointer({
-            String(validatingUTF8: UnsafePointer<CChar>($0.baseAddress!))
+            $0.baseAddress!.withMemoryRebound(to: CChar.self, capacity: $0.count) {
+                String(validatingUTF8: $0)
+            }
         }) else {
             return nil
         }
@@ -199,7 +207,7 @@ extension String {
 
 extension Primitive {
     
-    enum FormatError: ErrorProtocol {
+    enum FormatError: Error {
         
         case sentinelReached
         case reservedCode(Byte)

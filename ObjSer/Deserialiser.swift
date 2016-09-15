@@ -26,7 +26,7 @@
 //
 
 /// Throws `error` if `condition` evaluates to false.
-private func require(_ condition: @autoclosure() -> Bool, _ error: @autoclosure() -> ErrorProtocol) throws {
+private func require(_ condition: @autoclosure() -> Bool, _ error: @autoclosure() -> Error) throws {
     guard condition() else {
         throw error()
     }
@@ -66,33 +66,33 @@ public final class Deserialiser {
 
     /// Return the current primitive.
     /// - Requires: `currentState == .Unkown`, i.e. the primitive has not been consumed either as a sole value or for mapping.
-    private var currentPrimitive: Primitive {
+    fileprivate var currentPrimitive: Primitive {
         guard case .unknown = currentState else {
             preconditionFailure("Cannot deserialise a value that has already been deserialised.")
         }
         return deserialisingStack.last!.primitive
     }
 
-    private var currentState: State {
+    fileprivate var currentState: State {
         get { return deserialisingStack.last!.state }
         set { deserialisingStack[deserialisingStack.count-1].state = newValue }
     }
 
     // MARK: Conversion
 
-    private var errorToThrow: ErrorProtocol?
+    private var errorToThrow: Error?
 
-    @warn_unused_result
+    
     func deserialiseRoot<R : Serialisable>() throws -> R {
         return try deserialise(index: primitives.count - 1)
     }
 
-    @warn_unused_result
-    private func deserialise<R /*: Serialisable*/>(index: Int? = nil, primitive: Primitive? = nil, overrideType O: Any.Type = R.self) throws -> R {
+    
+    fileprivate func deserialise<R /*: Serialisable*/>(index: Int? = nil, primitive: Primitive? = nil, overrideType O: Any.Type = R.self) throws -> R {
         assert((index != nil) || (primitive != nil), "Index or primitive must be provided.")
 
         // if top-level and already deserialised, return value
-        if let i = index, v = deserialised[i] { return v as! R }
+        if let i = index, let v = deserialised[i] { return v as! R }
 
         // get actual required output type and wrapped primitive, if necessary
         let (primitive, O) = try { () -> (Primitive, Any.Type) in
@@ -135,7 +135,7 @@ extension Deserialiser {
 
     /// Return a value of type `R` for `key`, or `nil` if the value does not exist.
     /// - Requires: `R : Serialisable`
-    @warn_unused_result
+    
     public func deserialiseUnconstrained<R>(forKey key: String) throws -> R? {
         let map: [String : Primitive]
         switch currentState {
@@ -162,22 +162,22 @@ extension Deserialiser {
     }
 
     /// Return a value of type `R` for `key`, or `nil` if the value does not exist.
-    @warn_unused_result
+    
     public func deserialise<R : Serialisable>(forKey key: String) throws -> R? {
         return try deserialiseUnconstrained(forKey: key)
     }
 
-    @warn_unused_result
+    
     public func deserialiseUnconstrained<R>() throws -> R {
         return try deserialise(primitive: currentPrimitive)
     }
 
-    @warn_unused_result
+    
     public func deserialise<R : Serialisable>() throws -> R {
         return try deserialiseUnconstrained()
     }
 
-    @warn_unused_result
+    
     public func deserialiseInteger<R : IntegralType>() throws -> R {
         guard case .integer(let i) = currentPrimitive else { throw DeserialiseError.incorrectType(currentPrimitive) }
         guard let v = R(convert: i) else { throw DeserialiseError.conversionFailed(i) }
@@ -191,35 +191,35 @@ extension Deserialiser {
         return ()
     }
 
-    @warn_unused_result
+    
     public func deserialiseBool() throws -> Bool {
         guard case .boolean(let b) = currentPrimitive else { throw DeserialiseError.incorrectType(currentPrimitive) }
         currentState = .completed
         return b
     }
 
-    @warn_unused_result
+    
     public func deserialiseFloat<R : FloatType>() throws -> R {
         guard case .float(let f) = currentPrimitive else { throw DeserialiseError.incorrectType(currentPrimitive) }
         currentState = .completed
         return R(f)
     }
 
-    @warn_unused_result
+    
     public func deserialiseString() throws -> String {
         guard case .string(let s) = currentPrimitive else { throw DeserialiseError.incorrectType(currentPrimitive) }
         currentState = .completed
         return s
     }
 
-    @warn_unused_result
+    
     public func deserialiseData() throws -> ByteArray {
         guard case .data(let bytes) = currentPrimitive else { throw DeserialiseError.incorrectType(currentPrimitive) }
         currentState = .completed
         return bytes
     }
 
-    @warn_unused_result
+    
     public func deserialiseArrayUnconstrained<R>() throws -> AnySequence<R> {
         guard case .array(let a) = currentPrimitive else { throw DeserialiseError.incorrectType(currentPrimitive) }
         return try AnySequence(a.map {
@@ -227,12 +227,12 @@ extension Deserialiser {
         })
     }
 
-    @warn_unused_result
+    
     public func deserialiseArray<R : Serialisable>() throws -> AnySequence<R> {
         return try deserialiseArrayUnconstrained()
     }
 
-    @warn_unused_result
+    
     public func deserialiseMapUnconstrained<K, V>() throws -> AnySequence<(K, V)> {
         guard case .map(let a) = currentPrimitive else { throw DeserialiseError.incorrectType(currentPrimitive) }
         return try AnySequence(PairSequence(a).map {
@@ -240,7 +240,7 @@ extension Deserialiser {
         })
     }
 
-    @warn_unused_result
+    
     public func deserialiseMap<K : Serialisable, V : Serialisable>() throws -> AnySequence<(K, V)> {
         return try deserialiseMapUnconstrained()
     }

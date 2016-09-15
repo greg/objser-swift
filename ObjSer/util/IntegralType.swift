@@ -78,8 +78,8 @@ extension UInt : IntegralType { }
 /// A type-erased integer.
 public struct AnyInteger {
 
-    private let negative: Bool
-    private let value: UInt64
+    fileprivate let negative: Bool
+    fileprivate let value: UInt64
 
     public init<T : IntegralType>(_ v: T) {
         if v < 0 {
@@ -119,7 +119,7 @@ extension IntegralType {
 
 }
 
-extension AnyInteger : IntegerLiteralConvertible {
+extension AnyInteger : ExpressibleByIntegerLiteral {
 
     public init(integerLiteral value: Int64) {
         self.init(value)

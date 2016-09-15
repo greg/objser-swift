@@ -63,7 +63,7 @@ public struct AnyFloat {
         case double(Float64)
     }
 
-    private let box: Box
+    fileprivate let box: Box
 
     public init<T : FloatType>(_ v: T) {
         switch v {

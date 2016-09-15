@@ -170,7 +170,7 @@ class Tests: XCTestCase {
         let g = try! Primitive(readFrom: i)
 //        i.close()
 //        
-        XCTAssertEqual(String(f), String(g))
+        XCTAssertEqual(String(describing: f), String(describing: g))
         
 //        let b = [215,68,113,97,117,97,195,184,101,117,113,98,66,113,99,207] as [UInt8]
 //        let ii = NSInputStream(data: NSData(bytes: b, length: b.count))
@@ -242,7 +242,7 @@ class Tests: XCTestCase {
             let b = try ObjSer.deserialise(fromStream: i) as S
             print("unarchived", b)
             
-            XCTAssertEqual(String(a), String(b))
+            XCTAssertEqual(String(describing: a), String(describing: b))
         }
         catch {
             XCTFail("\(error)")
@@ -278,9 +278,9 @@ class Tests: XCTestCase {
         
         do {
             let b: [P] = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes), identifiableTypes: [A.self, B.self, Cyclic.self])
-            print(String(a))
-            print(String(b))
-            XCTAssert(String(a) == String(b) && a[2] as! Cyclic == b[2] as! Cyclic)
+            print(String(describing: a))
+            print(String(describing: b))
+            XCTAssert(String(describing: a) == String(describing: b) && a[2] as! Cyclic == b[2] as! Cyclic)
         }
         catch {
             XCTFail("\(error)")
@@ -297,9 +297,9 @@ class Tests: XCTestCase {
         
         do {
             let b: [P] = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes), identifiableTypes: [G<Int>.self, G<Float>.self])
-            print(String(a))
-            print(String(b))
-            XCTAssert(String(a) == String(b))
+            print(String(describing: a))
+            print(String(describing: b))
+            XCTAssert(String(describing: a) == String(describing: b))
         }
         catch {
             XCTFail("\(error)")

@@ -65,7 +65,7 @@ public final class Serialiser {
         serialise(unconstrained: value, forKey: key)
     }
 
-    private func setSoleValue(_ v: Primitive) {
+    fileprivate func setSoleValue(_ v: Primitive) {
         guard case .empty = currentObject else {
             preconditionFailure("Cannot set a sole value for an object that already has a value.")
         }
@@ -87,7 +87,7 @@ public final class Serialiser {
         let v = indexStack.popLast()!
         switch v {
         case .empty:
-            preconditionFailure("Object being serialised (of type \(v.dynamicType)) did not call any serialise functions in its implementation of serialiseWith.")
+            preconditionFailure("Object being serialised (of type \(type(of: v))) did not call any serialise functions in its implementation of serialiseWith.")
         case .mapping(let m):
             return .map(m)
         case .value(let v):
@@ -103,7 +103,7 @@ public final class Serialiser {
     @discardableResult
     private func index<T /*: Serialisable*/>(_ v: T) -> Int {
         precondition(indexing, "Cannot index object: indexing has already completed.")
-        precondition(v is Serialisable, "Object of type \(v.dynamicType) : \(T.self) does not conform to Serialisable.")
+        precondition(v is Serialisable, "Object of type \(type(of: v)) : \(T.self) does not conform to Serialisable.")
         let v = v as! Serialisable
 
         func unidentifiedIndex(_ v: Serialisable) -> Int {
@@ -117,7 +117,8 @@ public final class Serialiser {
                 stringIDs[s] = newID
             }
             // deduplicate objects to prevent cycles
-            else if let o = v as? AnyObject {
+            else if type(of: v) is AnyClass {
+                let o = v as AnyObject
                 let oid = ObjectIdentifier(o)
                 if let oid = objectIDs[oid] {
                     return oid
@@ -136,8 +137,8 @@ public final class Serialiser {
 
         // type-identify if non-concrete
         if !(T.self is Serialisable.Type) {
-            guard let name = v.dynamicType.typeUniqueIdentifier else {
-                preconditionFailure("Object of type \(v.dynamicType) placed in container requiring a typeUniqueIdentifier to be provided, but does not provide one.")
+            guard let name = type(of: v).typeUniqueIdentifier else {
+                preconditionFailure("Object of type \(type(of: v)) placed in container requiring a typeUniqueIdentifier to be provided, but does not provide one.")
             }
             objects[id].typedIDs = objects[id].typedIDs ?? [:]
             if let tid = objects[id].typedIDs![name] { return tid }
@@ -151,7 +152,7 @@ public final class Serialiser {
     }
 
     /// - Requires: `T : Serialisable`
-    private func indexAndPromise<T /*: Serialisable*/>(_ v: T) -> Primitive {
+    fileprivate func indexAndPromise<T /*: Serialisable*/>(_ v: T) -> Primitive {
         let id = index(v)
         return promise(id: id)
     }
@@ -229,7 +230,7 @@ extension Serialiser {
 
     /// Serialise `bytes` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
-    public func serialise<S : Sequence where S.Iterator.Element == Byte>(data bytes: S) {
+    public func serialise<S : Sequence>(data bytes: S) where S.Iterator.Element == Byte {
         setSoleValue(.data(ByteArray(bytes)))
     }
 
@@ -242,14 +243,14 @@ extension Serialiser {
 
     /// Serialise `seq` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
-    public func serialise<S : Sequence where S.Iterator.Element : Serialisable>(array seq: S) {
+    public func serialise<S : Sequence>(array seq: S) where S.Iterator.Element : Serialisable {
         serialise(unconstrainedArray: seq)
     }
 
     /// Serialise `seq` as the sole value of the object.
     /// - Requires: `S.Generator.Element == (K : Serialisable, V : Serialisable)`
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
-    public func serialise<S : Sequence, K, V where S.Iterator.Element == (key: K, value: V)>(unconstrainedMap seq: S) {
+    public func serialise<S : Sequence, K, V>(unconstrainedMap seq: S) where S.Iterator.Element == (key: K, value: V) {
         var a = ContiguousArray<Primitive>()
         a.reserveCapacity(seq.underestimatedCount * 2)
         for (key, val) in seq {
@@ -261,7 +262,7 @@ extension Serialiser {
 
     /// Serialise `seq` as the sole value of the object.
     /// - Warning: Do _not_ call any other `serialise` functions within the same implementation of `serialiseWith`.
-    public func serialise<S : Sequence, K : Serialisable, V : Serialisable where S.Iterator.Element == (key: K, value: V)>(map seq: S) {
+    public func serialise<S : Sequence, K : Serialisable, V : Serialisable>(map seq: S) where S.Iterator.Element == (key: K, value: V) {
         serialise(unconstrainedMap: seq)
     }
 
