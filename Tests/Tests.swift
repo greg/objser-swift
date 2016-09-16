@@ -229,7 +229,7 @@ class Tests: XCTestCase {
         
         let o = OutputStream()
         
-        ObjSer.serialise(value: a, to: o)
+        ObjSer.serialise(a, to: o)
 //        print("bytes:", o.bytes.map { String($0, radix: 16) })
     
         let i = InputStream(bytes: o.bytes)
@@ -239,7 +239,7 @@ class Tests: XCTestCase {
 //            x += 1
 //        }
         do {
-            let b = try ObjSer.deserialise(fromStream: i) as S
+            let b = try ObjSer.deserialise(from: i) as S
             print("unarchived", b)
             
             XCTAssertEqual(String(describing: a), String(describing: b))
@@ -254,11 +254,11 @@ class Tests: XCTestCase {
         let a = Cyclic()
 
         let o = OutputStream()
-        ObjSer.serialise(value: a, to: o)
+        ObjSer.serialise(a, to: o)
         print(o.bytes.map({ String($0, radix: 16) }).joined(separator: " "))
         
         do {
-            let b: Cyclic = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes))
+            let b: Cyclic = try ObjSer.deserialise(from: InputStream(bytes: o.bytes))
             XCTAssert(a == b)
         }
         catch {
@@ -273,11 +273,11 @@ class Tests: XCTestCase {
         let a: [P] = [A(a: -32), B(b: 4.7), c]
         
         let o = OutputStream()
-        ObjSer.serialise(value: a, to: o)
+        ObjSer.serialise(a, to: o)
         print(o.bytes.map({ String($0, radix: 16) }).joined(separator: " "))
         
         do {
-            let b: [P] = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes), identifiableTypes: [A.self, B.self, Cyclic.self])
+            let b: [P] = try ObjSer.deserialise(from: InputStream(bytes: o.bytes), identifiableTypes: [A.self, B.self, Cyclic.self])
             print(String(describing: a))
             print(String(describing: b))
             XCTAssert(String(describing: a) == String(describing: b) && a[2] as! Cyclic == b[2] as! Cyclic)
@@ -292,11 +292,11 @@ class Tests: XCTestCase {
         let a: [P] = [G<Int>(v: 15312)/*, G<Float>(v: 3.14)*/]
 
         let o = OutputStream()
-        ObjSer.serialise(value: a, to: o)
+        ObjSer.serialise(a, to: o)
         print(o.bytes.map({ String($0, radix: 16) }).joined(separator: " "))
         
         do {
-            let b: [P] = try ObjSer.deserialise(fromStream: InputStream(bytes: o.bytes), identifiableTypes: [G<Int>.self, G<Float>.self])
+            let b: [P] = try ObjSer.deserialise(from: InputStream(bytes: o.bytes), identifiableTypes: [G<Int>.self, G<Float>.self])
             print(String(describing: a))
             print(String(describing: b))
             XCTAssert(String(describing: a) == String(describing: b))
